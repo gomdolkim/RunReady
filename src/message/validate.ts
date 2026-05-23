@@ -32,11 +32,13 @@ function emojis(text: string): string[] {
 }
 
 /**
- * Numbers excluding the first two lines (the hook and the date), whose wording
- * and year/day change between languages. All real metric numbers live below.
+ * Metric numbers to preserve: everything below the hook and date lines, minus
+ * clock times (Korean "5–7시" / "19시쯤"), which legitimately localize between
+ * languages (e.g. 19시 → 7 PM). What remains is AQI and temperatures.
  */
 function dataNumbers(text: string): string[] {
-  return text.split('\n').slice(2).join('\n').match(NUMBER_RE) ?? [];
+  const body = text.split('\n').slice(2).join('\n').replace(/\d+(?:–\d+)?시/g, '');
+  return body.match(NUMBER_RE) ?? [];
 }
 
 function lineBreaks(text: string): number {
