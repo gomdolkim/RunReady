@@ -1,11 +1,10 @@
 import { GOLDEN } from '../config.js';
-import type { GoldenWindow, HourlyWeather, TimeAdvice, WindowQuality } from '../types.js';
-import { bangkokDateKey, bangkokHour, formatClock } from '../util/time.js';
-import { wbgt } from './wbgt.js';
+import type { GoldenWindow, WindowQuality } from '../types.js';
+import { formatClock } from '../util/time.js';
 
-type Tier = WindowQuality | 'none';
+export type Tier = WindowQuality | 'none';
 
-interface ClassifiedHour {
+export interface ClassifiedHour {
   hour: number;
   quality: Tier;
 }
@@ -20,16 +19,9 @@ export function classifyHour(wbgtValue: number, aqi: number): Tier {
   return 'none';
 }
 
-function inBands(hour: number): boolean {
-  const [dawnStart, dawnEnd] = GOLDEN.bands.dawn;
-  const [eveStart, eveEnd] = GOLDEN.bands.evening;
-  return (hour >= dawnStart && hour <= dawnEnd) || (hour >= eveStart && hour <= eveEnd);
-}
-
 /**
  * Collapse classified hours (sorted ascending) into windows: maximal runs of
- * consecutive hours sharing one non-none tier. Caps at two windows, preferring
- * best, and returns them in chronological order.
+ * consecutive hours sharing one non-none tier, in chronological order.
  */
 export function buildWindows(classified: ClassifiedHour[]): GoldenWindow[] {
   const runs: GoldenWindow[] = [];
@@ -60,69 +52,5 @@ export function buildWindows(classified: ClassifiedHour[]): GoldenWindow[] {
   }
   if (prev !== null) flush(prev);
 
-  const rank = (q: WindowQuality): number => (q === 'best' ? 0 : 1);
-  return [...runs]
-    .sort((a, b) => rank(a.quality) - rank(b.quality) || a.start.localeCompare(b.start))
-    .slice(0, 2)
-    .sort((a, b) => a.start.localeCompare(b.start));
-}
-
-interface BandHour {
-  hour: number;
-  temp: number;
-  humidity: number;
-}
-
-/** Today's dawn/evening band hours (Bangkok date of the earliest sample). */
-function todayBandHours(hourlyWeather: HourlyWeather[]): BandHour[] {
-  const sorted = [...hourlyWeather].sort((a, b) => a.dt - b.dt);
-  const first = sorted[0];
-  if (!first) return [];
-
-  const today = bangkokDateKey(first.dt);
-  const out: BandHour[] = [];
-  for (const h of sorted) {
-    if (bangkokDateKey(h.dt) !== today) continue;
-    const clock = bangkokHour(h.dt);
-    if (!inBands(clock)) continue;
-    out.push({ hour: clock, temp: h.temp, humidity: h.humidity });
-  }
-  return out;
-}
-
-/**
- * Find the best running windows for today, gating each band hour by per-hour
- * heat (WBGT) and the day's air quality (AQI).
- */
-export function goldenWindows(hourlyWeather: HourlyWeather[], aqi: number): GoldenWindow[] {
-  const classified = todayBandHours(hourlyWeather).map((h) => ({
-    hour: h.hour,
-    quality: classifyHour(wbgt(h.temp, h.humidity), aqi),
-  }));
-  return buildWindows(classified);
-}
-
-/** The coolest (lowest WBGT) band hour today, or null if none. Ties go earliest. */
-export function coolestBandHour(hourlyWeather: HourlyWeather[]): number | null {
-  let best: { hour: number; wbgt: number } | null = null;
-  for (const h of todayBandHours(hourlyWeather)) {
-    const value = wbgt(h.temp, h.humidity);
-    if (best === null || value < best.wbgt) best = { hour: h.hour, wbgt: value };
-  }
-  return best?.hour ?? null;
-}
-
-/**
- * Time-of-day advice: golden windows when they exist; otherwise the coolest
- * band hour as a best-effort "least bad" suggestion; otherwise none.
- */
-export function recommendTimes(hourlyWeather: HourlyWeather[], aqi: number): TimeAdvice {
-  const windows = goldenWindows(hourlyWeather, aqi);
-  if (windows.length > 0) return { kind: 'windows', windows };
-
-  const coolest = coolestBandHour(hourlyWeather);
-  if (coolest !== null) {
-    return { kind: 'coolest', start: formatClock(coolest), end: formatClock(coolest + 1) };
-  }
-  return { kind: 'none' };
+  return runs;
 }

@@ -1,49 +1,48 @@
 import { airLabel, heatLabel, uvLabel } from '../logic/labels.js';
-import type { Conditions, Grade, TimeAdvice } from '../types.js';
+import type { BandReport, Conditions, Grade } from '../types.js';
 import { bangkokDateLabel } from '../util/time.js';
 
-const VERDICT_EMOJI: Record<Grade, string> = { GO: '🟢', CAUTION: '🟡', SKIP: '🔴' };
-const VERDICT_LINE: Record<Grade, string> = {
-  GO: '오늘은 달리기 딱 좋아요!',
-  CAUTION: '새벽·저녁이라면 뛸 만해요',
-  SKIP: '오늘은 실외 러닝 비추천',
-};
+const GRADE_EMOJI: Record<Grade, string> = { GO: '🟢', CAUTION: '🟡', SKIP: '🔴' };
 
-/** Render the "best time to run" line value from the time advice. */
-function timeAdviceText(times: TimeAdvice): string {
-  switch (times.kind) {
-    case 'windows':
-      return times.windows.map((w) => `${w.start}–${w.end}`).join(' · ');
-    case 'coolest':
-      return `마땅한 때 없음 — 그나마 ${times.start} 무렵`;
-    case 'none':
-      return '오늘은 정보가 없어요';
+/** When in the band to run: the good window range, or the coolest hour. */
+function timeText(band: BandReport): string {
+  if (band.window) {
+    const start = Number(band.window.start.slice(0, 2));
+    const end = Number(band.window.end.slice(0, 2));
+    return `${start}–${end}시`;
   }
+  if (band.coolestHour !== null) return `${band.coolestHour}시쯤`;
+  return '정보 없음';
+}
+
+function bandLine(emoji: string, label: string, band: BandReport): string {
+  if (!band.available) return `${emoji} ${label}: 정보 없음`;
+  return (
+    `${emoji} ${label} ${GRADE_EMOJI[band.grade]} ${timeText(band)} · ` +
+    `더위 ${heatLabel(band.wbgt)} ${Math.round(band.temp)}°C · 자외선 ${uvLabel(band.uvi)}`
+  );
 }
 
 /**
- * Build the Korean post: a rotating hook, the date, a plain-Korean verdict,
- * labeled metrics (no cryptic units), time-of-day advice, and a rotating
- * closing call-to-action. Line 1 is the date (localized in code for replies).
+ * Build the Korean post: a rotating hook, the date, the day's air quality, then
+ * the dawn and evening bands (when to run + conditions then), and a rotating
+ * recommendation. Line 1 is the date (localized in code for the replies).
  */
 export function buildKoreanPost(
   c: Conditions,
   dtSeconds: number,
   hook: string,
-  closingLine: string,
+  recommendation: string,
 ): string {
   return [
     hook,
     bangkokDateLabel(dtSeconds),
     '',
-    `${VERDICT_EMOJI[c.grade]} ${VERDICT_LINE[c.grade]}`,
-    '',
     `😷 미세먼지: ${airLabel(c.aqi)} (AQI ${Math.round(c.aqi)})`,
-    `🥵 한낮 더위: ${heatLabel(c.peakWbgt)} (최고 ${c.peakTemp.toFixed(1)}°C)`,
-    `🧴 한낮 자외선: ${uvLabel(c.peakUv)} (최고 ${Math.round(c.peakUv)})`,
     '',
-    `⏰ 뛰기 좋은 시간: ${timeAdviceText(c.times)}`,
+    bandLine('🌅', '새벽', c.dawn),
+    bandLine('🌆', '저녁', c.evening),
     '',
-    closingLine,
+    recommendation,
   ].join('\n');
 }

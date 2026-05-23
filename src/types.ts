@@ -43,22 +43,30 @@ export interface GoldenWindow {
   quality: WindowQuality;
 }
 
-/** Time-of-day running advice: good windows, a best-effort coolest hour, or none. */
-export type TimeAdvice =
-  | { kind: 'windows'; windows: GoldenWindow[] }
-  | { kind: 'coolest'; start: string; end: string }
-  | { kind: 'none' };
-
-/** Everything needed to render a post — summarized over the whole day. */
-export interface Conditions {
+/** Runnability of one time band (dawn or evening), at its best hour. */
+export interface BandReport {
+  /** Whether the forecast has any hours in this band today. */
+  available: boolean;
   grade: Grade;
-  /** Today's PM2.5 US AQI (from WAQI). */
+  /** Best contiguous window in the band, if one qualifies. */
+  window: GoldenWindow | null;
+  /** Coolest hour in the band (fallback time), or null. */
+  coolestHour: number | null;
+  /** Conditions at the band's coolest (best) hour. */
+  wbgt: number;
+  temp: number;
+  uvi: number;
+}
+
+/** Which time of day to recommend running. */
+export type Outcome = 'dawn' | 'evening' | 'both' | 'indoor';
+
+/** Everything needed to render a post — runner-centric (dawn vs evening). */
+export interface Conditions {
+  /** Today's PM2.5 US AQI (from WAQI) — daily, shown once. */
   aqi: number;
-  /** Hottest daytime temperature (°C). */
-  peakTemp: number;
-  /** Hottest daytime WBGT (°C) — drives the heat label. */
-  peakWbgt: number;
-  /** Peak daytime UV index. */
-  peakUv: number;
-  times: TimeAdvice;
+  dawn: BandReport;
+  evening: BandReport;
+  /** Which time of day to recommend. */
+  outcome: Outcome;
 }

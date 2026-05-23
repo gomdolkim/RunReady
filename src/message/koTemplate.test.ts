@@ -6,61 +6,47 @@ import type { Conditions } from '../types.js';
 const DT = Date.UTC(2026, 4, 23, 22, 0, 0) / 1000;
 
 const base: Conditions = {
-  grade: 'SKIP',
-  aqi: 53,
-  peakTemp: 35.6,
-  peakWbgt: 38.0,
-  peakUv: 10,
-  times: { kind: 'coolest', start: '05:00', end: '06:00' },
+  aqi: 111,
+  dawn: {
+    available: true,
+    grade: 'CAUTION',
+    window: { start: '05:00', end: '07:00', quality: 'good' },
+    coolestHour: 5,
+    wbgt: 31,
+    temp: 28,
+    uvi: 1,
+  },
+  evening: {
+    available: true,
+    grade: 'SKIP',
+    window: null,
+    coolestHour: 18,
+    wbgt: 34,
+    temp: 33,
+    uvi: 3,
+  },
+  outcome: 'dawn',
 };
 
 describe('buildKoreanPost', () => {
-  it('renders hook, date, Korean verdict, whole-day metrics, time advice, closing', () => {
-    const post = buildKoreanPost(base, DT, '방콕, 오늘 뛸 수 있을까? 🏃', '오늘은 트레드밀에서 만나요 💪');
+  it('renders hook, date, air, dawn/evening bands, and the recommendation', () => {
+    const post = buildKoreanPost(base, DT, '방콕, 오늘 언제 뛸까? 🏃', '오늘은 새벽이 베스트! 🌅');
     const lines = post.split('\n');
-    expect(lines[0]).toBe('방콕, 오늘 뛸 수 있을까? 🏃');
+    expect(lines[0]).toBe('방콕, 오늘 언제 뛸까? 🏃');
     expect(lines[1]).toBe('2026.05.24 (일)');
-    expect(post).toContain('🔴 오늘은 실외 러닝 비추천');
-    expect(post).toContain('😷 미세먼지: 보통 (AQI 53)');
-    expect(post).toContain('🥵 한낮 더위: 매우 위험 (최고 35.6°C)');
-    expect(post).toContain('🧴 한낮 자외선: 매우 높음 (최고 10)');
+    expect(post).toContain('😷 미세먼지: 나쁨 (AQI 111)');
+    expect(post).toContain('🌅 새벽 🟡 5–7시 · 더위 주의 28°C · 자외선 낮음');
+    expect(post).toContain('🌆 저녁 🔴 18시쯤 · 더위 위험 33°C · 자외선 보통');
+    expect(post).toContain('오늘은 새벽이 베스트! 🌅');
   });
 
-  it('shows the midday UV peak (not the dawn value)', () => {
-    // peakUv 10 -> "매우 높음", proving it uses the day's peak, not 4am (~0).
-    expect(buildKoreanPost(base, DT, 'h', 'c')).toContain('🧴 한낮 자외선: 매우 높음 (최고 10)');
+  it('uses Korean only — no English verdict words', () => {
+    expect(buildKoreanPost(base, DT, 'hook', 'rec')).not.toMatch(/\b(GO|SKIP|CAUTION)\b/);
   });
 
-  it('uses Korean only — no English verdict words, no raw WBGT', () => {
-    const post = buildKoreanPost(base, DT, 'hook', 'closing');
-    expect(post).not.toMatch(/\b(GO|SKIP|CAUTION)\b/);
-    expect(post).not.toContain('WBGT');
-  });
-
-  it('shows concrete golden windows when available', () => {
-    const post = buildKoreanPost(
-      {
-        ...base,
-        grade: 'GO',
-        times: {
-          kind: 'windows',
-          windows: [
-            { start: '05:00', end: '07:00', quality: 'best' },
-            { start: '17:00', end: '19:00', quality: 'good' },
-          ],
-        },
-      },
-      DT,
-      'hook',
-      'go closing',
-    );
-    expect(post).toContain('⏰ 뛰기 좋은 시간: 05:00–07:00 · 17:00–19:00');
-    expect(post).toContain('🟢 오늘은 달리기 딱 좋아요!');
-  });
-
-  it('suggests the coolest hour when no window qualifies', () => {
-    expect(buildKoreanPost(base, DT, 'h', 'c')).toContain(
-      '⏰ 뛰기 좋은 시간: 마땅한 때 없음 — 그나마 05:00 무렵',
-    );
+  it('shows the good window as a range and a SKIP band as the coolest hour', () => {
+    const post = buildKoreanPost(base, DT, 'h', 'r');
+    expect(post).toContain('새벽 🟡 5–7시'); // window range
+    expect(post).toContain('저녁 🔴 18시쯤'); // coolest-hour fallback
   });
 });
