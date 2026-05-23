@@ -8,3 +8,23 @@ export async function getJson(url: string): Promise<unknown> {
   }
   return res.json();
 }
+
+/**
+ * POST form-encoded params and parse the JSON response, throwing on a non-2xx.
+ * The token travels in the body (not the URL), and any `error.message` from the
+ * response is surfaced for debugging.
+ */
+export async function postForm(url: string, params: Record<string, string>): Promise<unknown> {
+  const res = await fetch(url, { method: 'POST', body: new URLSearchParams(params) });
+  if (!res.ok) {
+    let detail = '';
+    try {
+      const body = (await res.json()) as { error?: { message?: string } };
+      detail = body?.error?.message ?? '';
+    } catch {
+      // non-JSON error body; status alone will have to do
+    }
+    throw new Error(`HTTP ${res.status} for ${url.split('?')[0]}${detail ? `: ${detail}` : ''}`);
+  }
+  return res.json();
+}

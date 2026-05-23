@@ -5,9 +5,10 @@ day at **04:00 Bangkok time** it posts a traffic-light verdict (🟢 GO / 🟡 C
 🔴 SKIP) to Threads in **Korean, English, and Thai**, based on PM2.5 and heat
 stress (WBGT).
 
-> Status: **Phase 2 complete** — data pipeline, condition logic, the Korean post,
-> and English + Thai translation (Claude `claude-haiku-4-5`) render end-to-end
-> (console output). Threads publishing (Phase 3) is next.
+> Status: **Phase 3 complete** — full pipeline runs end-to-end: data → Korean
+> post → English + Thai translation → a 3-post Threads chain (KO main + EN/TH
+> replies). `npm run dev -- --dry-run` prints without publishing. Phase 4
+> (GitHub Actions automation) is next.
 
 ## How it decides
 
@@ -45,9 +46,11 @@ npm test               # run the test suite (vitest)
 npm run coverage       # tests with coverage
 npm run typecheck      # tsc --noEmit
 npm run build          # compile to dist/
-npm start              # run the bot (needs WAQI + OPENWEATHER + ANTHROPIC keys)
+npm start              # run the bot + publish (needs all 4 keys)
 npm run dev            # run from source via tsx
+npm run dry            # full pipeline, print only — no publishing (needs WAQI+OW+ANTHROPIC)
 npm run verify:translate  # live KO->EN/TH check (needs only ANTHROPIC_API_KEY)
+npm run verify:threads    # publish a sample chain to Threads (needs ANTHROPIC + THREADS)
 ```
 
 Local runs load `.env` automatically (via `dotenv`). In GitHub Actions the keys
@@ -64,7 +67,9 @@ src/
   data/                # WAQI, OpenWeather One Call, OpenWeather Air Pollution
   logic/               # wbgt, verdict, goldenWindow
   message/             # closingLines, koTemplate, translate, validate
+  threads/             # post (create+publish), chain (3-post chain)
   util/                # time (Asia/Bangkok), http
 scripts/
   verifyTranslation.ts # live KO->EN/TH translation check
+  verifyThreads.ts     # live Threads posting check
 ```

@@ -14,7 +14,9 @@
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
-    "verify:translate": "tsx scripts/verifyTranslation.ts"
+    "dry": "tsx src/index.ts --dry-run",
+    "verify:translate": "tsx scripts/verifyTranslation.ts",
+    "verify:threads": "tsx scripts/verifyThreads.ts"
   },
   "license": "MIT",
   "devDependencies": {
