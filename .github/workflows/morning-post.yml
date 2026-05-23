@@ -1,11 +1,11 @@
-name: Wat Run Morning Post
+name: Bangkok Run Morning Post
 
 on:
   # Bangkok 04:00 == UTC 21:00 (previous day).
-  # ⚠️ Commented out until all 4 secrets are set. Uncomment the cron line to
-  # activate the daily auto-post (otherwise scheduled runs fail every morning).
-  # schedule:
-  #   - cron: '0 21 * * *'
+  # ⚠️ Active: requires all 4 repository secrets to be set, or scheduled runs
+  # fail every morning.
+  schedule:
+    - cron: '0 21 * * *'
   workflow_dispatch:
     inputs:
       dry_run:
