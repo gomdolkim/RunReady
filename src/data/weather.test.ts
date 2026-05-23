@@ -12,8 +12,8 @@ afterEach(() => vi.unstubAllGlobals());
 const SAMPLE = {
   current: { temp: 28.4, humidity: 78, uvi: 4, feels_like: 31.2 },
   hourly: [
-    { dt: 100, temp: 28.4, humidity: 78 },
-    { dt: 200, temp: 29.1, humidity: 75 },
+    { dt: 100, temp: 28.4, humidity: 78, uvi: 0 },
+    { dt: 200, temp: 29.1, humidity: 75, uvi: 9 },
   ],
 };
 
@@ -23,8 +23,8 @@ describe('fetchWeather', () => {
     const result = await fetchWeather('key123');
     expect(result.current).toEqual({ temp: 28.4, humidity: 78, uvi: 4, feelsLike: 31.2 });
     expect(result.hourly).toEqual([
-      { dt: 100, temp: 28.4, humidity: 78 },
-      { dt: 200, temp: 29.1, humidity: 75 },
+      { dt: 100, temp: 28.4, humidity: 78, uvi: 0 },
+      { dt: 200, temp: 29.1, humidity: 75, uvi: 9 },
     ]);
     const url = String(fn.mock.calls[0]![0]);
     expect(url).toContain('onecall');

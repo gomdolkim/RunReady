@@ -16,6 +16,8 @@ export interface HourlyWeather {
   temp: number;
   /** Relative humidity in %. */
   humidity: number;
+  /** UV index for the hour. */
+  uvi: number;
 }
 
 /** Current conditions plus an hourly forecast (from OpenWeather One Call). */
@@ -53,13 +55,16 @@ export type TimeAdvice =
   | { kind: 'coolest'; start: string; end: string }
   | { kind: 'none' };
 
-/** Everything needed to render a post. */
+/** Everything needed to render a post — summarized over the whole day. */
 export interface Conditions {
-  pm25: number;
-  temp: number;
-  humidity: number;
-  uvi: number;
-  wbgt: number;
   grade: Grade;
+  /** Daytime average PM2.5 (μg/m³). */
+  pm25: number;
+  /** Hottest daytime temperature (°C). */
+  peakTemp: number;
+  /** Hottest daytime WBGT (°C) — drives the heat label. */
+  peakWbgt: number;
+  /** Peak daytime UV index. */
+  peakUv: number;
   times: TimeAdvice;
 }

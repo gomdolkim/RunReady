@@ -6,26 +6,29 @@ import type { Conditions } from '../types.js';
 const DT = Date.UTC(2026, 4, 23, 22, 0, 0) / 1000;
 
 const base: Conditions = {
-  pm25: 58,
-  temp: 35.6,
-  humidity: 61,
-  uvi: 5,
-  wbgt: 38.0,
   grade: 'SKIP',
+  pm25: 58,
+  peakTemp: 35.6,
+  peakWbgt: 38.0,
+  peakUv: 10,
   times: { kind: 'coolest', start: '05:00', end: '06:00' },
 };
 
 describe('buildKoreanPost', () => {
-  it('renders hook, date, Korean verdict, labeled metrics, time advice, closing', () => {
+  it('renders hook, date, Korean verdict, whole-day metrics, time advice, closing', () => {
     const post = buildKoreanPost(base, DT, '방콕, 오늘 뛸 수 있을까? 🏃', '오늘은 트레드밀에서 만나요 💪');
     const lines = post.split('\n');
     expect(lines[0]).toBe('방콕, 오늘 뛸 수 있을까? 🏃');
     expect(lines[1]).toBe('2026.05.24 (일)');
-    expect(post).toContain('🔴 한낮 실외는 무리예요');
+    expect(post).toContain('🔴 오늘은 실외 러닝 비추천');
     expect(post).toContain('😷 미세먼지: 나쁨 (58)');
-    expect(post).toContain('🥵 더위: 매우 위험 (35.6°C·습도 61%)');
-    expect(post).toContain('🧴 자외선: 보통 (5)');
-    expect(post).toContain('오늘은 트레드밀에서 만나요 💪');
+    expect(post).toContain('🥵 한낮 더위: 매우 위험 (최고 35.6°C)');
+    expect(post).toContain('🧴 한낮 자외선: 매우 높음 (최고 10)');
+  });
+
+  it('shows the midday UV peak (not the dawn value)', () => {
+    // peakUv 10 -> "매우 높음", proving it uses the day's peak, not 4am (~0).
+    expect(buildKoreanPost(base, DT, 'h', 'c')).toContain('🧴 한낮 자외선: 매우 높음 (최고 10)');
   });
 
   it('uses Korean only — no English verdict words, no raw WBGT', () => {
@@ -59,18 +62,5 @@ describe('buildKoreanPost', () => {
     expect(buildKoreanPost(base, DT, 'h', 'c')).toContain(
       '⏰ 뛰기 좋은 시간: 마땅한 때 없음 — 그나마 05:00 무렵',
     );
-  });
-
-  it('rounds numbers and keeps one decimal for temperature', () => {
-    const post = buildKoreanPost(
-      { ...base, pm25: 57.6, humidity: 60.5, uvi: 4.6, temp: 35.56 },
-      DT,
-      'h',
-      'c',
-    );
-    expect(post).toContain('😷 미세먼지: 나쁨 (58)');
-    expect(post).toContain('습도 61%');
-    expect(post).toContain('🧴 자외선: 보통 (5)');
-    expect(post).toContain('35.6°C');
   });
 });

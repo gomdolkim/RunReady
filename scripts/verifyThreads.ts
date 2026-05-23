@@ -23,10 +23,11 @@ const airQuality: AirQuality = { pm25: 38 };
 const weather: Weather = {
   current: { temp: 28.5, humidity: 80, uvi: 3, feelsLike: 33 },
   hourly: [
-    { dt: bkk(5), temp: 27.5, humidity: 82 },
-    { dt: bkk(6), temp: 28, humidity: 80 },
-    { dt: bkk(17), temp: 30, humidity: 65 },
-    { dt: bkk(18), temp: 28.5, humidity: 70 },
+    { dt: bkk(5), temp: 27.5, humidity: 82, uvi: 0 },
+    { dt: bkk(6), temp: 28, humidity: 80, uvi: 2 },
+    { dt: bkk(13), temp: 36, humidity: 55, uvi: 11 },
+    { dt: bkk(17), temp: 30, humidity: 65, uvi: 3 },
+    { dt: bkk(18), temp: 28.5, humidity: 70, uvi: 1 },
   ],
 };
 const forecast: HourlyPm25[] = [bkk(5), bkk(6), bkk(17), bkk(18)].map((dt) => ({ dt, pm25: 33 }));

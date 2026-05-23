@@ -5,8 +5,8 @@ import { bangkokDateLabel } from '../util/time.js';
 const VERDICT_EMOJI: Record<Grade, string> = { GO: '🟢', CAUTION: '🟡', SKIP: '🔴' };
 const VERDICT_LINE: Record<Grade, string> = {
   GO: '오늘은 달리기 딱 좋아요!',
-  CAUTION: '뛸 수 있어요, 무리만 마세요',
-  SKIP: '한낮 실외는 무리예요',
+  CAUTION: '새벽·저녁이라면 뛸 만해요',
+  SKIP: '오늘은 실외 러닝 비추천',
 };
 
 /** Render the "best time to run" line value from the time advice. */
@@ -39,8 +39,8 @@ export function buildKoreanPost(
     `${VERDICT_EMOJI[c.grade]} ${VERDICT_LINE[c.grade]}`,
     '',
     `😷 미세먼지: ${pm25Label(c.pm25)} (${Math.round(c.pm25)})`,
-    `🥵 더위: ${heatLabel(c.wbgt)} (${c.temp.toFixed(1)}°C·습도 ${Math.round(c.humidity)}%)`,
-    `🧴 자외선: ${uvLabel(c.uvi)} (${Math.round(c.uvi)})`,
+    `🥵 한낮 더위: ${heatLabel(c.peakWbgt)} (최고 ${c.peakTemp.toFixed(1)}°C)`,
+    `🧴 한낮 자외선: ${uvLabel(c.peakUv)} (최고 ${Math.round(c.peakUv)})`,
     '',
     `⏰ 뛰기 좋은 시간: ${timeAdviceText(c.times)}`,
     '',

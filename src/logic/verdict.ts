@@ -1,5 +1,5 @@
 import { THRESHOLDS } from '../config.js';
-import type { Grade } from '../types.js';
+import type { Grade, TimeAdvice } from '../types.js';
 
 const SEVERITY: Record<Grade, number> = { GO: 0, CAUTION: 1, SKIP: 2 };
 
@@ -25,4 +25,15 @@ export function worseOf(a: Grade, b: Grade): Grade {
 /** Final verdict: the worse of the PM2.5 and WBGT grades. */
 export function verdict(pm25: number, wbgtValue: number): Grade {
   return worseOf(gradePm25(pm25), gradeWbgt(wbgtValue));
+}
+
+/**
+ * Verdict from the day's running windows: GO if there's a best window, CAUTION
+ * if only good windows, SKIP if there's no runnable window today. This reflects
+ * the whole-day hourly analysis (a window already requires acceptable heat AND
+ * air at that hour) rather than a single snapshot.
+ */
+export function verdictFromTimes(times: TimeAdvice): Grade {
+  if (times.kind !== 'windows') return 'SKIP';
+  return times.windows.some((w) => w.quality === 'best') ? 'GO' : 'CAUTION';
 }

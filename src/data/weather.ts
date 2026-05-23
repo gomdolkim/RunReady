@@ -4,7 +4,7 @@ import { getJson } from '../util/http.js';
 
 interface OneCallResponse {
   current?: { temp?: number; humidity?: number; uvi?: number; feels_like?: number };
-  hourly?: Array<{ dt?: number; temp?: number; humidity?: number }>;
+  hourly?: Array<{ dt?: number; temp?: number; humidity?: number; uvi?: number }>;
 }
 
 /** Fetch current + hourly Bangkok weather from OpenWeather One Call 3.0. */
@@ -27,7 +27,7 @@ export async function fetchWeather(apiKey: string): Promise<Weather> {
     if (typeof h.dt !== 'number' || typeof h.temp !== 'number' || typeof h.humidity !== 'number') {
       throw new Error('OpenWeather hourly entry missing fields');
     }
-    return { dt: h.dt, temp: h.temp, humidity: h.humidity };
+    return { dt: h.dt, temp: h.temp, humidity: h.humidity, uvi: typeof h.uvi === 'number' ? h.uvi : 0 };
   });
 
   return {

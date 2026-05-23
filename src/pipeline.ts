@@ -1,27 +1,35 @@
+import { avgPm25Today, peakHeat, peakUv } from './logic/daySummary.js';
 import { recommendTimes } from './logic/goldenWindow.js';
-import { verdict } from './logic/verdict.js';
+import { verdictFromTimes } from './logic/verdict.js';
 import { wbgt } from './logic/wbgt.js';
 import { pickClosingLine } from './message/closingLines.js';
 import { pickHook } from './message/hooks.js';
 import { buildKoreanPost } from './message/koTemplate.js';
 import type { AirQuality, Conditions, HourlyPm25, Weather } from './types.js';
 
-/** Combine raw data sources into the conditions used to render a post. */
+/**
+ * Combine raw data into conditions, summarized over the whole day's hourly
+ * forecast: average PM2.5, the midday heat/UV peaks, and the running windows.
+ * The verdict follows from the windows. Falls back to current readings only if
+ * the hourly forecast is unavailable.
+ */
 export function buildConditions(
   aq: AirQuality,
   weather: Weather,
   forecast: HourlyPm25[],
 ): Conditions {
-  const { temp, humidity, uvi } = weather.current;
-  const wbgtValue = wbgt(temp, humidity);
+  const times = recommendTimes(weather.hourly, forecast);
+  const heat = peakHeat(weather.hourly);
+  const uv = peakUv(weather.hourly);
+  const pm25 = avgPm25Today(forecast);
+
   return {
-    pm25: aq.pm25,
-    temp,
-    humidity,
-    uvi,
-    wbgt: wbgtValue,
-    grade: verdict(aq.pm25, wbgtValue),
-    times: recommendTimes(weather.hourly, forecast),
+    grade: verdictFromTimes(times),
+    pm25: pm25 ?? aq.pm25,
+    peakTemp: heat?.temp ?? weather.current.temp,
+    peakWbgt: heat?.wbgt ?? wbgt(weather.current.temp, weather.current.humidity),
+    peakUv: uv ?? weather.current.uvi,
+    times,
   };
 }
 
