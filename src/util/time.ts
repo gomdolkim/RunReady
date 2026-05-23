@@ -39,6 +39,33 @@ export function bangkokDateLabel(dtSeconds: number): string {
   return `${p.year}.${p.month}.${p.day} (${KO_WEEKDAYS[dow]})`;
 }
 
+function localeParts(dtSeconds: number, locale: string): Record<string, string> {
+  const fmt = new Intl.DateTimeFormat(locale, {
+    timeZone: TIMEZONE,
+    year: 'numeric',
+    month: locale.startsWith('en') ? 'long' : 'short',
+    day: 'numeric',
+    weekday: 'short',
+  });
+  const out: Record<string, string> = {};
+  for (const part of fmt.formatToParts(dtSeconds * 1000)) {
+    out[part.type] = part.value;
+  }
+  return out;
+}
+
+/** English date label, e.g. "May 24, 2026 (Sun)". */
+export function enDateLabel(dtSeconds: number): string {
+  const p = localeParts(dtSeconds, 'en-US');
+  return `${p.month} ${p.day}, ${p.year} (${p.weekday})`;
+}
+
+/** Thai date label with Buddhist year, e.g. "24 พ.ค. 2569 (อา.)". */
+export function thDateLabel(dtSeconds: number): string {
+  const p = localeParts(dtSeconds, 'th-TH-u-ca-buddhist');
+  return `${p.day} ${p.month} ${p.year} (${p.weekday})`;
+}
+
 /** Format an integer hour as a zero-padded "HH:00" clock string. */
 export function formatClock(hour: number): string {
   return `${String(hour).padStart(2, '0')}:00`;

@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { bangkokHour, bangkokDateKey, bangkokDateLabel, formatClock } from './time.js';
+import {
+  bangkokHour,
+  bangkokDateKey,
+  bangkokDateLabel,
+  enDateLabel,
+  thDateLabel,
+  formatClock,
+} from './time.js';
 
 // 2026-05-24 05:00 Bangkok == 2026-05-23 22:00 UTC
 const DAWN = Date.UTC(2026, 4, 23, 22, 0, 0) / 1000;
@@ -31,6 +38,18 @@ describe('bangkokDateLabel', () => {
   it('formats the Korean date label with weekday', () => {
     // 2026-05-24 is a Sunday (일).
     expect(bangkokDateLabel(DAWN)).toBe('2026.05.24 (일)');
+  });
+});
+
+describe('enDateLabel', () => {
+  it('formats the US date with weekday', () => {
+    expect(enDateLabel(DAWN)).toBe('May 24, 2026 (Sun)');
+  });
+});
+
+describe('thDateLabel', () => {
+  it('formats the Thai date with Buddhist year and weekday', () => {
+    expect(thDateLabel(DAWN)).toBe('24 พ.ค. 2569 (อา.)');
   });
 });
 

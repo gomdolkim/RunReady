@@ -5,9 +5,9 @@ day at **04:00 Bangkok time** it posts a traffic-light verdict (🟢 GO / 🟡 C
 🔴 SKIP) to Threads in **Korean, English, and Thai**, based on PM2.5 and heat
 stress (WBGT).
 
-> Status: **Phase 1 complete** — data pipeline, condition logic, and the Korean
-> post render end-to-end (console output). Translation (Phase 2) and Threads
-> publishing (Phase 3) are next.
+> Status: **Phase 2 complete** — data pipeline, condition logic, the Korean post,
+> and English + Thai translation (Claude `claude-haiku-4-5`) render end-to-end
+> (console output). Threads publishing (Phase 3) is next.
 
 ## How it decides
 
@@ -41,13 +41,17 @@ cp .env.example .env   # then fill in tokens
 ## Scripts
 
 ```bash
-npm test          # run the test suite (vitest)
-npm run coverage  # tests with coverage
-npm run typecheck # tsc --noEmit
-npm run build     # compile to dist/
-npm start         # run the bot (needs WAQI_TOKEN + OPENWEATHER_API_KEY)
-npm run dev       # run from source via tsx
+npm test               # run the test suite (vitest)
+npm run coverage       # tests with coverage
+npm run typecheck      # tsc --noEmit
+npm run build          # compile to dist/
+npm start              # run the bot (needs WAQI + OPENWEATHER + ANTHROPIC keys)
+npm run dev            # run from source via tsx
+npm run verify:translate  # live KO->EN/TH check (needs only ANTHROPIC_API_KEY)
 ```
+
+Local runs load `.env` automatically (via `dotenv`). In GitHub Actions the keys
+come from repository secrets instead.
 
 ## Project layout
 
@@ -59,6 +63,8 @@ src/
   index.ts             # entry point (fetch + print)
   data/                # WAQI, OpenWeather One Call, OpenWeather Air Pollution
   logic/               # wbgt, verdict, goldenWindow
-  message/             # closingLines, koTemplate
+  message/             # closingLines, koTemplate, translate, validate
   util/                # time (Asia/Bangkok), http
+scripts/
+  verifyTranslation.ts # live KO->EN/TH translation check
 ```
