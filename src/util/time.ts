@@ -1,6 +1,23 @@
 import { TIMEZONE } from '../config.js';
 
+// Hardcoded name tables keep date labels deterministic across ICU versions —
+// Intl short forms vary by platform (e.g. Thai weekday "อา." vs "อาทิตย์").
 const KO_WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'] as const;
+const EN_WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
+const EN_MONTHS = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+] as const;
+const TH_WEEKDAYS = ['อา.', 'จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.'] as const;
+const TH_MONTHS = [
+  'ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.',
+  'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.',
+] as const;
+
+/** Day of week (0=Sun..6=Sat) for the Bangkok calendar date in `p`. */
+function dayOfWeek(p: Record<string, string>): number {
+  return new Date(`${p.year}-${p.month}-${p.day}T00:00:00Z`).getUTCDay();
+}
 
 function parts(dtSeconds: number): Record<string, string> {
   const fmt = new Intl.DateTimeFormat('en-CA', {
@@ -35,35 +52,22 @@ export function bangkokDateKey(dtSeconds: number): string {
 /** Korean date label, e.g. "2026.05.24 (일)". */
 export function bangkokDateLabel(dtSeconds: number): string {
   const p = parts(dtSeconds);
-  const dow = new Date(`${p.year}-${p.month}-${p.day}T00:00:00Z`).getUTCDay();
-  return `${p.year}.${p.month}.${p.day} (${KO_WEEKDAYS[dow]})`;
-}
-
-function localeParts(dtSeconds: number, locale: string): Record<string, string> {
-  const fmt = new Intl.DateTimeFormat(locale, {
-    timeZone: TIMEZONE,
-    year: 'numeric',
-    month: locale.startsWith('en') ? 'long' : 'short',
-    day: 'numeric',
-    weekday: 'short',
-  });
-  const out: Record<string, string> = {};
-  for (const part of fmt.formatToParts(dtSeconds * 1000)) {
-    out[part.type] = part.value;
-  }
-  return out;
+  return `${p.year}.${p.month}.${p.day} (${KO_WEEKDAYS[dayOfWeek(p)]!})`;
 }
 
 /** English date label, e.g. "May 24, 2026 (Sun)". */
 export function enDateLabel(dtSeconds: number): string {
-  const p = localeParts(dtSeconds, 'en-US');
-  return `${p.month} ${p.day}, ${p.year} (${p.weekday})`;
+  const p = parts(dtSeconds);
+  const month = EN_MONTHS[Number(p.month) - 1]!;
+  return `${month} ${Number(p.day)}, ${p.year} (${EN_WEEKDAYS[dayOfWeek(p)]!})`;
 }
 
-/** Thai date label with Buddhist year, e.g. "24 พ.ค. 2569 (อา.)". */
+/** Thai date label with Buddhist year (CE + 543), e.g. "24 พ.ค. 2569 (อา.)". */
 export function thDateLabel(dtSeconds: number): string {
-  const p = localeParts(dtSeconds, 'th-TH-u-ca-buddhist');
-  return `${p.day} ${p.month} ${p.year} (${p.weekday})`;
+  const p = parts(dtSeconds);
+  const month = TH_MONTHS[Number(p.month) - 1]!;
+  const year = Number(p.year) + 543;
+  return `${Number(p.day)} ${month} ${year} (${TH_WEEKDAYS[dayOfWeek(p)]!})`;
 }
 
 /** Format an integer hour as a zero-padded "HH:00" clock string. */
