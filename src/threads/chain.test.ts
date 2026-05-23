@@ -19,10 +19,10 @@ describe('publishChain', () => {
       .mockResolvedValueOnce('th1');
     const sleep = vi.fn().mockResolvedValue(undefined);
 
-    const result = await publishChain({ ko: 'K', en: 'E', th: 'T' }, post, sleep);
+    const result = await publishChain({ ko: 'K', en: 'E', th: 'T' }, post, sleep, 'IMG');
 
     expect(result).toEqual({ ko: 'ko1', en: 'en1', th: 'th1' });
-    expect(post).toHaveBeenNthCalledWith(1, 'K');
+    expect(post).toHaveBeenNthCalledWith(1, 'K', undefined, 'IMG'); // image on the main post
     expect(post).toHaveBeenNthCalledWith(2, 'E', 'ko1');
     expect(post).toHaveBeenNthCalledWith(3, 'T', 'en1'); // chained under EN, not KO
     expect(sleep).toHaveBeenCalledTimes(2);

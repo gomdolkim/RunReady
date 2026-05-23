@@ -3,6 +3,8 @@ import { postForm } from '../util/http.js';
 const API_BASE = 'https://graph.threads.net/v1.0';
 
 export interface PublishOptions {
+  /** Publish as an IMAGE post with this public image URL (else a TEXT post). */
+  imageUrl?: string;
   /** Injectable delay (for tests). */
   sleep?: (ms: number) => Promise<void>;
   /** Extra publish attempts after the first (default 2). */
@@ -31,11 +33,9 @@ export async function publishPost(
   const retries = options.publishRetries ?? 2;
   const retryDelayMs = options.retryDelayMs ?? 3000;
 
-  const createParams: Record<string, string> = {
-    media_type: 'TEXT',
-    text,
-    access_token: token,
-  };
+  const createParams: Record<string, string> = options.imageUrl
+    ? { media_type: 'IMAGE', image_url: options.imageUrl, text, access_token: token }
+    : { media_type: 'TEXT', text, access_token: token };
   if (replyToId) createParams.reply_to_id = replyToId;
 
   const container = (await postForm(`${API_BASE}/me/threads`, createParams)) as { id?: string };

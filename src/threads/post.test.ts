@@ -50,6 +50,15 @@ describe('publishPost', () => {
     expect(String((fn.mock.calls[0]![1] as RequestInit).body)).toContain('reply_to_id=parent99');
   });
 
+  it('creates an IMAGE container when an imageUrl is given', async () => {
+    const fn = mockFetchSequence([{ id: 'c3' }, { id: 't3' }]);
+    await publishPost('tok', 'caption', undefined, { imageUrl: 'https://x/img.jpg' });
+    const body = decodeURIComponent(String((fn.mock.calls[0]![1] as RequestInit).body));
+    expect(body).toContain('media_type=IMAGE');
+    expect(body).toContain('image_url=https://x/img.jpg');
+    expect(body).toContain('text=caption');
+  });
+
   it('throws when container creation returns no id', async () => {
     mockFetchSequence([{ error: 'bad' }]);
     await expect(publishPost('tok', 'x')).rejects.toThrow(/container/i);

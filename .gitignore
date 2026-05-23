@@ -1,6 +1,7 @@
 node_modules/
 dist/
 coverage/
+src/images/
 .env
 .env.local
 *.log

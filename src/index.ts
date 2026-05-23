@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { requireEnv } from './config.js';
 import { fetchAirQuality } from './data/airQuality.js';
 import { fetchWeather } from './data/weather.js';
+import { pickImage } from './message/images.js';
 import {
   createClient,
   translate,
@@ -57,8 +58,11 @@ async function main(): Promise<void> {
   const en = await translateSafe(client, koPost, 'English', now);
   const th = await translateSafe(client, koPost, 'Thai', now);
 
+  const imageUrl = pickImage(now);
+
   if (dryRun) {
     console.log(koPost);
+    console.log(`\n🖼️  image: ${imageUrl}`);
     if (en) console.log(`\n--- English ---\n${en}`);
     if (th) console.log(`\n--- Thai ---\n${th}`);
     console.log('\n[wat-run] dry run — nothing posted.');
@@ -66,8 +70,9 @@ async function main(): Promise<void> {
   }
 
   const token = requireEnv('THREADS_ACCESS_TOKEN');
-  const post: PostFn = (text, replyToId) => publishPost(token, text, replyToId);
-  const result = await publishChain({ ko: koPost, en, th }, post);
+  const post: PostFn = (text, replyToId, imgUrl) =>
+    publishPost(token, text, replyToId, { imageUrl: imgUrl });
+  const result = await publishChain({ ko: koPost, en, th }, post, undefined, imageUrl);
   console.log('[wat-run] posted:', JSON.stringify(result));
 }
 

@@ -13,7 +13,7 @@ export interface ChainResult {
   th: string | null;
 }
 
-export type PostFn = (text: string, replyToId?: string) => Promise<string>;
+export type PostFn = (text: string, replyToId?: string, imageUrl?: string) => Promise<string>;
 export type SleepFn = (ms: number) => Promise<void>;
 
 const REPLY_DELAY_MS = 2000;
@@ -33,8 +33,9 @@ export async function publishChain(
   texts: ChainTexts,
   post: PostFn,
   sleep: SleepFn = realSleep,
+  imageUrl?: string,
 ): Promise<ChainResult> {
-  const koId = await post(texts.ko);
+  const koId = await post(texts.ko, undefined, imageUrl);
   const result: ChainResult = { ko: koId, en: null, th: null };
 
   const replies: Array<['en' | 'th', string | null]> = [
