@@ -25,6 +25,7 @@ export function buildSystemPrompt(target: TargetLanguage): string {
 from Korean to ${target}.
 
 Rules:
+- Translate EVERYTHING into ${target}. Do not leave any Korean words.
 - Keep emojis and line breaks EXACTLY as in the source.
 - Keep all numbers, times, and units unchanged (58, 35.6°C, 61%, 05:00, etc).
 - Leave the SECOND line (the date) exactly as in the source; it is localized

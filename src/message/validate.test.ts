@@ -50,6 +50,11 @@ describe('validateTranslation', () => {
     expect(() => validateTranslation(SOURCE, dropped)).toThrow(/number/i);
   });
 
+  it('rejects a translation that left Korean untranslated', () => {
+    const partial = VALID_EN.replace('Poor', '나쁨'); // model left a Korean word
+    expect(() => validateTranslation(SOURCE, partial)).toThrow(/Korean/i);
+  });
+
   it('rejects a dropped emoji', () => {
     const dropped = VALID_EN.replace('😷 ', '');
     expect(() => validateTranslation(SOURCE, dropped)).toThrow(/emoji/i);

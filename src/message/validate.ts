@@ -53,6 +53,11 @@ function lineBreaks(text: string): number {
 export function validateTranslation(source: string, translated: string): void {
   assertUnder500(translated, 'translation');
 
+  // EN/TH output must not retain Korean — catches partial/incomplete translations.
+  if (/[가-힣]/.test(translated)) {
+    throw new Error('translation still contains untranslated Korean');
+  }
+
   if (lineBreaks(source) !== lineBreaks(translated)) {
     throw new Error(
       `translation line-break count (${lineBreaks(translated)}) != source (${lineBreaks(source)})`,
