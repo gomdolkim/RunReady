@@ -21,9 +21,13 @@ const realSleep: SleepFn = (ms) => new Promise((resolve) => setTimeout(resolve, 
 
 /**
  * Publish the chain. The Korean main post is required — if it fails, the error
- * propagates and no replies are attempted (no partial chain). Each reply is
- * best-effort: a failure is logged and the rest continue. `post`/`sleep` are
- * injected for testing.
+ * propagates and no replies are attempted (no partial chain).
+ *
+ * Replies are *chained* (KO → EN → TH): each reply targets the previous post in
+ * the chain, so they render as a single connected thread rather than separate
+ * replies to the root. Each reply is best-effort: on failure it is logged and
+ * the chain parent stays put (e.g. if EN fails, TH replies to KO).
+ * `post`/`sleep` are injected for testing.
  */
 export async function publishChain(
   texts: ChainTexts,
@@ -38,11 +42,14 @@ export async function publishChain(
     ['th', texts.th],
   ];
 
+  let parentId = koId;
   for (const [lang, text] of replies) {
     if (!text) continue;
     await sleep(REPLY_DELAY_MS);
     try {
-      result[lang] = await post(text, koId);
+      const id = await post(text, parentId);
+      result[lang] = id;
+      parentId = id; // next reply chains under this one
     } catch (err: unknown) {
       console.error(`[wat-run] ${lang} reply skipped:`, err instanceof Error ? err.message : err);
     }

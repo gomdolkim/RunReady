@@ -11,7 +11,7 @@ afterEach(() => {
 });
 
 describe('publishChain', () => {
-  it('posts KO first, then EN and TH as replies to the KO id', async () => {
+  it('chains the posts: EN replies to KO, TH replies to EN (one connected thread)', async () => {
     const post = vi
       .fn()
       .mockResolvedValueOnce('ko1')
@@ -24,11 +24,11 @@ describe('publishChain', () => {
     expect(result).toEqual({ ko: 'ko1', en: 'en1', th: 'th1' });
     expect(post).toHaveBeenNthCalledWith(1, 'K');
     expect(post).toHaveBeenNthCalledWith(2, 'E', 'ko1');
-    expect(post).toHaveBeenNthCalledWith(3, 'T', 'ko1');
+    expect(post).toHaveBeenNthCalledWith(3, 'T', 'en1'); // chained under EN, not KO
     expect(sleep).toHaveBeenCalledTimes(2);
   });
 
-  it('skips a null translation', async () => {
+  it('chains TH under KO when EN is null', async () => {
     const post = vi.fn().mockResolvedValueOnce('ko1').mockResolvedValueOnce('th1');
     const result = await publishChain({ ko: 'K', en: null, th: 'T' }, post, noSleep);
 
@@ -36,7 +36,7 @@ describe('publishChain', () => {
     expect(post).toHaveBeenNthCalledWith(2, 'T', 'ko1');
   });
 
-  it('continues to TH when the EN reply fails (best-effort)', async () => {
+  it('falls back to KO as TH parent when the EN reply fails (best-effort)', async () => {
     const post = vi
       .fn()
       .mockResolvedValueOnce('ko1')
@@ -46,6 +46,7 @@ describe('publishChain', () => {
     const result = await publishChain({ ko: 'K', en: 'E', th: 'T' }, post, noSleep);
 
     expect(result).toEqual({ ko: 'ko1', en: null, th: 'th1' });
+    expect(post).toHaveBeenNthCalledWith(3, 'T', 'ko1'); // EN failed, so TH chains under KO
   });
 
   it('throws when the KO main post fails and attempts no replies', async () => {
