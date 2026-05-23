@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { classifyHour, buildWindows, goldenWindows } from './goldenWindow.js';
+import { classifyHour, buildWindows, goldenWindows, recommendTimes } from './goldenWindow.js';
 import type { GoldenWindow } from '../types.js';
 
 describe('classifyHour', () => {
@@ -104,5 +104,35 @@ describe('goldenWindows (integration)', () => {
       { start: '04:00', end: '07:00', quality: 'best' },
       { start: '17:00', end: '19:00', quality: 'best' },
     ]);
+  });
+});
+
+describe('recommendTimes', () => {
+  const bkk = (h: number) => Date.UTC(2026, 4, 24, h - 7, 0, 0) / 1000;
+  const wx = (h: number, temp: number, humidity: number) => ({ dt: bkk(h), temp, humidity });
+  const pm = (h: number, pm25: number) => ({ dt: bkk(h), pm25 });
+
+  it('returns the golden windows when good times exist', () => {
+    const weather = [wx(5, 24, 50), wx(6, 24, 50)];
+    const forecast = [pm(5, 20), pm(6, 20)];
+    expect(recommendTimes(weather, forecast)).toEqual({
+      kind: 'windows',
+      windows: [{ start: '05:00', end: '07:00', quality: 'best' }],
+    });
+  });
+
+  it('falls back to the coolest band hour when no window qualifies', () => {
+    // All hot/polluted -> no window; hour 6 is the coolest (lowest WBGT).
+    const weather = [wx(5, 35, 72), wx(6, 33, 65), wx(7, 36, 75)];
+    const forecast = [pm(5, 60), pm(6, 60), pm(7, 60)];
+    expect(recommendTimes(weather, forecast)).toEqual({
+      kind: 'coolest',
+      start: '06:00',
+      end: '07:00',
+    });
+  });
+
+  it('returns kind "none" when there is no usable data', () => {
+    expect(recommendTimes([], [])).toEqual({ kind: 'none' });
   });
 });

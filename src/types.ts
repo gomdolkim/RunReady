@@ -47,6 +47,12 @@ export interface GoldenWindow {
   quality: WindowQuality;
 }
 
+/** Time-of-day running advice: good windows, a best-effort coolest hour, or none. */
+export type TimeAdvice =
+  | { kind: 'windows'; windows: GoldenWindow[] }
+  | { kind: 'coolest'; start: string; end: string }
+  | { kind: 'none' };
+
 /** Everything needed to render a post. */
 export interface Conditions {
   pm25: number;
@@ -55,5 +61,5 @@ export interface Conditions {
   uvi: number;
   wbgt: number;
   grade: Grade;
-  windows: GoldenWindow[];
+  times: TimeAdvice;
 }

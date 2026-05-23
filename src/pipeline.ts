@@ -1,7 +1,8 @@
-import { goldenWindows } from './logic/goldenWindow.js';
+import { recommendTimes } from './logic/goldenWindow.js';
 import { verdict } from './logic/verdict.js';
 import { wbgt } from './logic/wbgt.js';
 import { pickClosingLine } from './message/closingLines.js';
+import { pickHook } from './message/hooks.js';
 import { buildKoreanPost } from './message/koTemplate.js';
 import type { AirQuality, Conditions, HourlyPm25, Weather } from './types.js';
 
@@ -20,18 +21,22 @@ export function buildConditions(
     uvi,
     wbgt: wbgtValue,
     grade: verdict(aq.pm25, wbgtValue),
-    windows: goldenWindows(weather.hourly, forecast),
+    times: recommendTimes(weather.hourly, forecast),
   };
 }
 
-/** Build the Korean post end-to-end. `rng` is injectable for deterministic tests. */
+/**
+ * Build the Korean post end-to-end. The hook and closing line rotate by day of
+ * year (passed via `nowSeconds`), so the post stays fresh without randomness.
+ */
 export function buildPost(
   aq: AirQuality,
   weather: Weather,
   forecast: HourlyPm25[],
   nowSeconds: number,
-  rng: () => number = Math.random,
 ): string {
   const conditions = buildConditions(aq, weather, forecast);
-  return buildKoreanPost(conditions, nowSeconds, pickClosingLine(conditions.grade, rng));
+  const hook = pickHook(nowSeconds);
+  const closing = pickClosingLine(conditions.grade, nowSeconds);
+  return buildKoreanPost(conditions, nowSeconds, hook, closing);
 }

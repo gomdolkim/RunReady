@@ -2,33 +2,33 @@ import { describe, expect, it } from 'vitest';
 import { assertUnder500, validateTranslation } from './validate.js';
 
 const SOURCE = [
-  '☀️ Wat Run? — 2026.05.24 (일)',
-  '오늘 컨디션: 🟢 GO',
+  '방콕, 오늘 뛸 수 있을까? 🏃',
+  '2026.05.24 (일)',
   '',
-  '📊 PM2.5: 32 μg/m³',
-  '🌡️ 기온: 28.4°C (WBGT 26.8)',
-  '💧 습도: 78%',
-  '☂️ UV: 4',
+  '🔴 한낮 실외는 무리예요',
   '',
-  '🌅 골든 윈도우',
-  '05:00–07:00 (최적)',
+  '😷 미세먼지: 나쁨 (58)',
+  '🥵 더위: 매우 위험 (35.6°C·습도 61%)',
+  '🧴 자외선: 보통 (5)',
   '',
-  '뛰러 가요! 🏃',
+  '⏰ 뛰기 좋은 시간: 마땅한 때 없음 — 그나마 05:00 무렵',
+  '',
+  '오늘은 트레드밀에서 만나요 💪',
 ].join('\n');
 
 const VALID_EN = [
-  '☀️ Wat Run? — May 24, 2026 (Sun)',
-  'Today: 🟢 GO',
+  'Can you run in Bangkok today? 🏃',
+  'May 24, 2026 (Sun)',
   '',
-  '📊 PM2.5: 32 μg/m³',
-  '🌡️ Temp: 28.4°C (WBGT 26.8)',
-  '💧 Humidity: 78%',
-  '☂️ UV: 4',
+  '🔴 Too hot to run outside at midday',
   '',
-  '🌅 Golden windows',
-  '05:00–07:00 (best)',
+  '😷 Air quality: Bad (58)',
+  '🥵 Heat: Extreme (35.6°C·61% humidity)',
+  '🧴 UV: Moderate (5)',
   '',
-  "Let's run! 🏃",
+  '⏰ Best time to run: none — 05:00 is the least bad',
+  '',
+  'See you on the treadmill 💪',
 ].join('\n');
 
 describe('assertUnder500', () => {
@@ -45,23 +45,23 @@ describe('validateTranslation', () => {
     expect(() => validateTranslation(SOURCE, VALID_EN)).not.toThrow();
   });
 
-  it('allows the date header to localize the year (Thai Buddhist year)', () => {
+  it('allows the date line to localize the year (Thai Buddhist year)', () => {
     const th = VALID_EN.replace('May 24, 2026 (Sun)', '24 พ.ค. 2569 (อา.)');
     expect(() => validateTranslation(SOURCE, th)).not.toThrow();
   });
 
   it('rejects a translation that drops a data number', () => {
-    const dropped = VALID_EN.replace('PM2.5: 32', 'PM2.5:');
+    const dropped = VALID_EN.replace('Bad (58)', 'Bad');
     expect(() => validateTranslation(SOURCE, dropped)).toThrow(/number/i);
   });
 
   it('rejects a translation that drops an emoji', () => {
-    const dropped = VALID_EN.replace('🟢 ', '');
+    const dropped = VALID_EN.replace('😷 ', '');
     expect(() => validateTranslation(SOURCE, dropped)).toThrow(/emoji/i);
   });
 
   it('rejects a translation with a different line-break count', () => {
-    const collapsed = VALID_EN.replace('\n\n🌅', '\n🌅');
+    const collapsed = VALID_EN.replace('\n\n😷', '\n😷');
     expect(() => validateTranslation(SOURCE, collapsed)).toThrow(/line-break/i);
   });
 

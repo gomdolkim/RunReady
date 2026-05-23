@@ -5,17 +5,17 @@ import { buildSystemPrompt, translate, type TranslationClient } from './translat
 const DT = Date.UTC(2026, 4, 23, 22, 0, 0) / 1000;
 
 const KO = [
-  '☀️ Wat Run? — 2026.05.24 (일)',
-  '오늘 컨디션: 🟢 GO',
-  '📊 PM2.5: 32 μg/m³',
-  '뛰러 가요! 🏃',
+  '방콕, 오늘 뛸 수 있을까? 🏃',
+  '2026.05.24 (일)',
+  '😷 미세먼지: 나쁨 (58)',
+  '🔴 오늘은 실내로',
 ].join('\n');
 
 const EN = [
-  '☀️ Wat Run? — May 24, 2026 (Sun)',
-  'Today: 🟢 GO',
-  '📊 PM2.5: 32 μg/m³',
-  "Let's run! 🏃",
+  'Can you run in Bangkok today? 🏃',
+  'May 24, 2026 (Sun)',
+  '😷 Air quality: Bad (58)',
+  '🔴 Stay indoors today',
 ].join('\n');
 
 function mockClient(text: unknown, blockType = 'text') {
@@ -29,8 +29,7 @@ describe('buildSystemPrompt', () => {
     const p = buildSystemPrompt('English');
     expect(p).toContain('from Korean to English');
     expect(p).toContain('Keep emojis and line breaks EXACTLY');
-    expect(p).toContain('date header');
-    expect(p).toContain('GO / CAUTION / SKIP');
+    expect(p).toContain('date');
     expect(p).toContain('Output the translation ONLY');
   });
 
@@ -52,22 +51,21 @@ describe('translate', () => {
     );
   });
 
-  it('overrides the date header with the correct localized date (model got it wrong)', async () => {
-    // Model returns the wrong weekday; code must fix it to Sunday.
+  it('overrides the date line with the correct localized date (model got it wrong)', async () => {
     const { client } = mockClient(EN.replace('(Sun)', '(Sat)'));
     expect(await translate(client, KO, 'English', DT)).toBe(EN);
   });
 
-  it('localizes the date header to Thai (Buddhist year)', async () => {
+  it('localizes the date to Thai (Buddhist year)', async () => {
     const th = [
-      '☀️ Wat Run? — whatever the model wrote',
-      'วันนี้: 🟢 GO',
-      '📊 PM2.5: 32 μg/m³',
-      'ไปวิ่งกันเถอะ! 🏃',
+      '방콕에서 뛸까? 🏃',
+      'whatever the model wrote',
+      '😷 미세먼지: 나쁨 (58)',
+      '🔴 오늘은 실내로',
     ].join('\n');
     const { client } = mockClient(th);
     const out = await translate(client, KO, 'Thai', DT);
-    expect(out.split('\n')[0]).toBe('☀️ Wat Run? — 24 พ.ค. 2569 (อา.)');
+    expect(out.split('\n')[1]).toBe('24 พ.ค. 2569 (อา.)');
   });
 
   it('trims surrounding whitespace from the model output', async () => {
@@ -81,7 +79,7 @@ describe('translate', () => {
   });
 
   it('throws when the translation fails validation (dropped number)', async () => {
-    const { client } = mockClient(EN.replace('PM2.5: 32', 'PM2.5:'));
+    const { client } = mockClient(EN.replace('Bad (58)', 'Bad'));
     await expect(translate(client, KO, 'English', DT)).rejects.toThrow(/number/i);
   });
 });

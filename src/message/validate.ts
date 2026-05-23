@@ -31,9 +31,12 @@ function emojis(text: string): string[] {
   return text.match(EMOJI_RE) ?? [];
 }
 
-/** Numbers excluding the first (date header) line, whose year/day are localized. */
+/**
+ * Numbers excluding the first two lines (the hook and the date), whose wording
+ * and year/day change between languages. All real metric numbers live below.
+ */
 function dataNumbers(text: string): string[] {
-  return text.split('\n').slice(1).join('\n').match(NUMBER_RE) ?? [];
+  return text.split('\n').slice(2).join('\n').match(NUMBER_RE) ?? [];
 }
 
 function lineBreaks(text: string): number {

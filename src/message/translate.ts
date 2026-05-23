@@ -1,7 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { TRANSLATION_MODEL } from '../config.js';
 import { enDateLabel, thDateLabel } from '../util/time.js';
-import { postHeader } from './koTemplate.js';
 import { validateTranslation } from './validate.js';
 
 export type TargetLanguage = 'English' | 'Thai';
@@ -22,33 +21,31 @@ export interface TranslationClient {
 
 /** Build the translation system prompt for the target language (spec verbatim). */
 export function buildSystemPrompt(target: TargetLanguage): string {
-  return `You are translating a daily running conditions post for Bangkok runners
+  return `You are translating a daily running-conditions post for Bangkok runners
 from Korean to ${target}.
 
 Rules:
 - Keep emojis and line breaks EXACTLY as in the source.
-- Keep all numbers, times, and units unchanged (32 μg/m³, 28.4°C, etc).
-- Leave the FIRST line (the date header) exactly as in the source; do not
-  translate or change it (the date is localized separately in code).
-- Use a friendly, concise social media tone.
-- For Thai, use casual but respectful tone (avoid overly formal เรา/ครับ unless natural).
-- Translate "골든 윈도우" naturally:
-  - English: "Golden windows"
-  - Thai: "ช่วงเวลาที่ดีที่สุด"
-- "GO / CAUTION / SKIP" — keep as English in all languages.
+- Keep all numbers, times, and units unchanged (58, 35.6°C, 61%, 05:00, etc).
+- Leave the SECOND line (the date) exactly as in the source; it is localized
+  separately in code.
+- Translate the FIRST line (the headline) naturally and catchily — it is a hook.
+- Keep the traffic-light emojis (🟢 🟡 🔴) as-is; they signal today's verdict.
+- Use a friendly, motivating social-media tone that encourages people to run.
+- For Thai, use a casual but respectful tone.
 
 Output the translation ONLY. No explanations.`;
 }
 
-function localizedHeader(target: TargetLanguage, dtSeconds: number): string {
-  return postHeader(target === 'English' ? enDateLabel(dtSeconds) : thDateLabel(dtSeconds));
+function localizedDate(target: TargetLanguage, dtSeconds: number): string {
+  return target === 'English' ? enDateLabel(dtSeconds) : thDateLabel(dtSeconds);
 }
 
 /**
  * Translate a Korean post to the target language and validate the result.
- * The date header (first line) is set deterministically in code — LLMs are
- * unreliable at day-of-week and Buddhist-year conversion — overriding whatever
- * the model returned for that line.
+ * The date (second line) is set deterministically in code — LLMs are unreliable
+ * at day-of-week and Buddhist-year conversion — overriding whatever the model
+ * returned for that line.
  *
  * Throws if the model returns no text or the translation fails validation.
  * No prompt caching: the system prompt is below the cacheable minimum and the
@@ -73,7 +70,7 @@ export async function translate(
   }
 
   const lines = block.text.trim().split('\n');
-  lines[0] = localizedHeader(target, dtSeconds);
+  lines[1] = localizedDate(target, dtSeconds); // date is the second line
   const text = lines.join('\n');
 
   validateTranslation(koText, text);

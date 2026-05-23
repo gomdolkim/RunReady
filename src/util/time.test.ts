@@ -6,6 +6,8 @@ import {
   enDateLabel,
   thDateLabel,
   formatClock,
+  dayOfYear,
+  pickByDay,
 } from './time.js';
 
 // 2026-05-24 05:00 Bangkok == 2026-05-23 22:00 UTC
@@ -58,5 +60,22 @@ describe('formatClock', () => {
     expect(formatClock(5)).toBe('05:00');
     expect(formatClock(17)).toBe('17:00');
     expect(formatClock(0)).toBe('00:00');
+  });
+});
+
+describe('dayOfYear', () => {
+  it('returns the Bangkok day of the year', () => {
+    // 2026-05-24 = 31+28+31+30+24 = 144th day.
+    expect(dayOfYear(DAWN)).toBe(144);
+  });
+});
+
+describe('pickByDay', () => {
+  const pool = ['a', 'b', 'c'];
+  it('cycles deterministically by day of year', () => {
+    // dayOfYear(DAWN)=144; 144 % 3 = 0
+    expect(pickByDay(pool, DAWN)).toBe('a');
+    expect(pickByDay(pool, DAWN, 1)).toBe('b');
+    expect(pickByDay(pool, DAWN, 2)).toBe('c');
   });
 });

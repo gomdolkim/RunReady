@@ -74,3 +74,20 @@ export function thDateLabel(dtSeconds: number): string {
 export function formatClock(hour: number): string {
   return `${String(hour).padStart(2, '0')}:00`;
 }
+
+/** Day of the year (1–366) for the Bangkok calendar date. */
+export function dayOfYear(dtSeconds: number): number {
+  const p = parts(dtSeconds);
+  const year = Number(p.year);
+  const start = Date.UTC(year, 0, 1);
+  const today = Date.UTC(year, Number(p.month) - 1, Number(p.day));
+  return Math.round((today - start) / 86_400_000) + 1;
+}
+
+/**
+ * Pick from a pool deterministically by day of year, so it cycles through the
+ * whole pool (no repeats until exhausted). `offset` lets independent pools vary.
+ */
+export function pickByDay<T>(pool: readonly T[], dtSeconds: number, offset = 0): T {
+  return pool[(dayOfYear(dtSeconds) + offset) % pool.length]!;
+}
