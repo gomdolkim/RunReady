@@ -58,10 +58,10 @@ describe('translate', () => {
 
   it('localizes the date to Thai (Buddhist year)', async () => {
     const th = [
-      '방콕에서 뛸까? 🏃',
-      'whatever the model wrote',
-      '😷 미세먼지: 나쁨 (58)',
-      '🔴 오늘은 실내로',
+      'วิ่งที่กรุงเทพวันนี้ได้ไหม? 🏃',
+      '(date is overridden in code)',
+      '😷 ฝุ่น PM2.5: แย่ (58)',
+      '🔴 วันนี้อยู่ในร่ม',
     ].join('\n');
     const { client } = mockClient(th);
     const out = await translate(client, KO, 'Thai', DT);
