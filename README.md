@@ -5,10 +5,10 @@ day at **04:00 Bangkok time** it posts a traffic-light verdict (🟢 GO / 🟡 C
 🔴 SKIP) to Threads in **Korean, English, and Thai**, based on PM2.5 and heat
 stress (WBGT).
 
-> Status: **Phase 3 complete** — full pipeline runs end-to-end: data → Korean
-> post → English + Thai translation → a 3-post Threads chain (KO main + EN/TH
-> replies). `npm run dev -- --dry-run` prints without publishing. Phase 4
-> (GitHub Actions automation) is next.
+> Status: **Phase 4 complete (build)** — full pipeline runs end-to-end (data →
+> Korean post → EN/TH translation → 3-post Threads chain) and GitHub Actions
+> workflows are in place. The daily cron is left **disabled** until the four
+> repository secrets are set (see Automation below).
 
 ## How it decides
 
@@ -72,4 +72,21 @@ src/
 scripts/
   verifyTranslation.ts # live KO->EN/TH translation check
   verifyThreads.ts     # live Threads posting check
+.github/workflows/
+  morning-post.yml     # daily post (cron + manual dispatch)
+  ci.yml               # typecheck + tests + build on push/PR
 ```
+
+## Automation
+
+`.github/workflows/morning-post.yml` runs the bot. To go live:
+
+1. **Set the four repository secrets** (Settings → Secrets and variables →
+   Actions): `WAQI_TOKEN`, `OPENWEATHER_API_KEY`, `ANTHROPIC_API_KEY`,
+   `THREADS_ACCESS_TOKEN`.
+2. **Test first:** Actions → *Wat Run Morning Post* → *Run workflow*. It defaults
+   to a **dry run** (prints, no publishing). Untick "dry run" to publish for real.
+3. **Enable the daily schedule:** uncomment the `cron: '0 21 * * *'` line in
+   `morning-post.yml` (Bangkok 04:00 = UTC 21:00). It stays disabled until then so
+   scheduled runs don't fail every morning before the secrets exist.
+

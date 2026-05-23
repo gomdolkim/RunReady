@@ -1,0 +1,56 @@
+name: Wat Run Morning Post
+
+on:
+  # Bangkok 04:00 == UTC 21:00 (previous day).
+  # ⚠️ Commented out until all 4 secrets are set. Uncomment the cron line to
+  # activate the daily auto-post (otherwise scheduled runs fail every morning).
+  # schedule:
+  #   - cron: '0 21 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Print the posts without publishing to Threads'
+        type: boolean
+        default: true
+
+# Don't let a slow run overlap the next one.
+concurrency:
+  group: morning-post
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Post to Threads
+        env:
+          WAQI_TOKEN: ${{ secrets.WAQI_TOKEN }}
+          OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+        run: |
+          # Manual runs default to a safe dry-run; scheduled runs always publish.
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.dry_run }}" = "true" ]; then
+            echo "Running in dry-run mode (no publishing)."
+            npm start -- --dry-run
+          else
+            echo "Publishing to Threads."
+            npm start
+          fi
