@@ -3,10 +3,10 @@
 /** Traffic-light grade. Kept as English in all languages per spec. */
 export type Grade = 'GO' | 'CAUTION' | 'SKIP';
 
-/** Current air quality (headline number, from WAQI). */
+/** Air quality from WAQI/aqicn — the US AQI value (same scale aqicn apps show). */
 export interface AirQuality {
-  /** PM2.5 concentration in μg/m³. */
-  pm25: number;
+  /** Today's PM2.5 US AQI (daily forecast average, else current). */
+  aqi: number;
 }
 
 /** A single hour of weather. */
@@ -31,12 +31,6 @@ export interface Weather {
   hourly: HourlyWeather[];
 }
 
-/** A single hour of PM2.5 forecast (from OpenWeather Air Pollution). */
-export interface HourlyPm25 {
-  dt: number;
-  pm25: number;
-}
-
 /** Quality tier of a golden window. */
 export type WindowQuality = 'best' | 'good';
 
@@ -58,8 +52,8 @@ export type TimeAdvice =
 /** Everything needed to render a post — summarized over the whole day. */
 export interface Conditions {
   grade: Grade;
-  /** Daytime average PM2.5 (μg/m³). */
-  pm25: number;
+  /** Today's PM2.5 US AQI (from WAQI). */
+  aqi: number;
   /** Hottest daytime temperature (°C). */
   peakTemp: number;
   /** Hottest daytime WBGT (°C) — drives the heat label. */

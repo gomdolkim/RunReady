@@ -7,7 +7,7 @@ const DT = Date.UTC(2026, 4, 23, 22, 0, 0) / 1000;
 
 const base: Conditions = {
   grade: 'SKIP',
-  pm25: 58,
+  aqi: 53,
   peakTemp: 35.6,
   peakWbgt: 38.0,
   peakUv: 10,
@@ -21,7 +21,7 @@ describe('buildKoreanPost', () => {
     expect(lines[0]).toBe('방콕, 오늘 뛸 수 있을까? 🏃');
     expect(lines[1]).toBe('2026.05.24 (일)');
     expect(post).toContain('🔴 오늘은 실외 러닝 비추천');
-    expect(post).toContain('😷 미세먼지: 나쁨 (58)');
+    expect(post).toContain('😷 미세먼지: 보통 (AQI 53)');
     expect(post).toContain('🥵 한낮 더위: 매우 위험 (최고 35.6°C)');
     expect(post).toContain('🧴 한낮 자외선: 매우 높음 (최고 10)');
   });

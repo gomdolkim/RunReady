@@ -1,10 +1,10 @@
 /** Plain-Korean grade labels for the displayed metrics. */
 
-/** PM2.5 (μg/m³) → Korean air-quality grade. */
-export function pm25Label(pm25: number): string {
-  if (pm25 < 35) return '좋음';
-  if (pm25 < 55) return '보통';
-  if (pm25 < 75) return '나쁨';
+/** PM2.5 US AQI (WAQI/aqicn) → Korean air-quality grade. */
+export function airLabel(aqi: number): string {
+  if (aqi <= 50) return '좋음';
+  if (aqi <= 100) return '보통';
+  if (aqi <= 150) return '나쁨';
   return '매우 나쁨';
 }
 

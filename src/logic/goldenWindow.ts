@@ -1,11 +1,5 @@
 import { GOLDEN } from '../config.js';
-import type {
-  GoldenWindow,
-  HourlyPm25,
-  HourlyWeather,
-  TimeAdvice,
-  WindowQuality,
-} from '../types.js';
+import type { GoldenWindow, HourlyWeather, TimeAdvice, WindowQuality } from '../types.js';
 import { bangkokDateKey, bangkokHour, formatClock } from '../util/time.js';
 import { wbgt } from './wbgt.js';
 
@@ -16,10 +10,13 @@ interface ClassifiedHour {
   quality: Tier;
 }
 
-/** Classify a single hour into best / good / none from its WBGT and PM2.5. */
-export function classifyHour(wbgtValue: number, pm25: number): Tier {
-  if (wbgtValue <= GOLDEN.best.wbgt && pm25 <= GOLDEN.best.pm25) return 'best';
-  if (wbgtValue <= GOLDEN.good.wbgt && pm25 <= GOLDEN.good.pm25) return 'good';
+/**
+ * Classify an hour into best / good / none from its WBGT and the day's air
+ * quality (US AQI). Air is a daily gate (WAQI gives a daily value, not hourly).
+ */
+export function classifyHour(wbgtValue: number, aqi: number): Tier {
+  if (wbgtValue <= GOLDEN.best.wbgt && aqi <= GOLDEN.best.aqi) return 'best';
+  if (wbgtValue <= GOLDEN.good.wbgt && aqi <= GOLDEN.good.aqi) return 'good';
   return 'none';
 }
 
@@ -72,7 +69,6 @@ export function buildWindows(classified: ClassifiedHour[]): GoldenWindow[] {
 
 interface BandHour {
   hour: number;
-  dt: number;
   temp: number;
   humidity: number;
 }
@@ -89,27 +85,20 @@ function todayBandHours(hourlyWeather: HourlyWeather[]): BandHour[] {
     if (bangkokDateKey(h.dt) !== today) continue;
     const clock = bangkokHour(h.dt);
     if (!inBands(clock)) continue;
-    out.push({ hour: clock, dt: h.dt, temp: h.temp, humidity: h.humidity });
+    out.push({ hour: clock, temp: h.temp, humidity: h.humidity });
   }
   return out;
 }
 
 /**
- * Find the best running windows for today. Merges hourly weather with hourly
- * PM2.5, restricts to the dawn/evening bands, and ignores hours lacking a
- * PM2.5 reading.
+ * Find the best running windows for today, gating each band hour by per-hour
+ * heat (WBGT) and the day's air quality (AQI).
  */
-export function goldenWindows(
-  hourlyWeather: HourlyWeather[],
-  hourlyPm25: HourlyPm25[],
-): GoldenWindow[] {
-  const pm25ByDt = new Map(hourlyPm25.map((h) => [h.dt, h.pm25]));
-  const classified: ClassifiedHour[] = [];
-  for (const h of todayBandHours(hourlyWeather)) {
-    const pm25 = pm25ByDt.get(h.dt);
-    if (pm25 === undefined) continue;
-    classified.push({ hour: h.hour, quality: classifyHour(wbgt(h.temp, h.humidity), pm25) });
-  }
+export function goldenWindows(hourlyWeather: HourlyWeather[], aqi: number): GoldenWindow[] {
+  const classified = todayBandHours(hourlyWeather).map((h) => ({
+    hour: h.hour,
+    quality: classifyHour(wbgt(h.temp, h.humidity), aqi),
+  }));
   return buildWindows(classified);
 }
 
@@ -127,11 +116,8 @@ export function coolestBandHour(hourlyWeather: HourlyWeather[]): number | null {
  * Time-of-day advice: golden windows when they exist; otherwise the coolest
  * band hour as a best-effort "least bad" suggestion; otherwise none.
  */
-export function recommendTimes(
-  hourlyWeather: HourlyWeather[],
-  hourlyPm25: HourlyPm25[],
-): TimeAdvice {
-  const windows = goldenWindows(hourlyWeather, hourlyPm25);
+export function recommendTimes(hourlyWeather: HourlyWeather[], aqi: number): TimeAdvice {
+  const windows = goldenWindows(hourlyWeather, aqi);
   if (windows.length > 0) return { kind: 'windows', windows };
 
   const coolest = coolestBandHour(hourlyWeather);

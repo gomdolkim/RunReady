@@ -1,6 +1,5 @@
 import 'dotenv/config';
 import { requireEnv } from './config.js';
-import { fetchAirForecast } from './data/airForecast.js';
 import { fetchAirQuality } from './data/airQuality.js';
 import { fetchWeather } from './data/weather.js';
 import {
@@ -46,14 +45,13 @@ async function main(): Promise<void> {
   const openweatherKey = requireEnv('OPENWEATHER_API_KEY');
   const anthropicKey = requireEnv('ANTHROPIC_API_KEY');
 
-  const [airQuality, weather, forecast] = await Promise.all([
+  const [airQuality, weather] = await Promise.all([
     fetchAirQuality(waqiToken),
     fetchWeather(openweatherKey),
-    fetchAirForecast(openweatherKey),
   ]);
 
   const now = Math.floor(Date.now() / 1000);
-  const koPost = buildPost(airQuality, weather, forecast, now);
+  const koPost = buildPost(airQuality, weather, now);
 
   const client = createClient(anthropicKey);
   const en = await translateSafe(client, koPost, 'English', now);

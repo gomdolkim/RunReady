@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { peakHeat, peakUv, avgPm25Today } from './daySummary.js';
-import type { HourlyPm25, HourlyWeather } from '../types.js';
+import { peakHeat, peakUv } from './daySummary.js';
+import type { HourlyWeather } from '../types.js';
 
 const bkk = (h: number, day = 24) => Date.UTC(2026, 4, day, h - 7, 0, 0) / 1000;
 const wx = (h: number, temp: number, humidity: number, uvi: number, day = 24): HourlyWeather => ({
@@ -38,17 +38,3 @@ describe('peakUv', () => {
   });
 });
 
-describe('avgPm25Today', () => {
-  it("averages today's hourly PM2.5, ignoring other days", () => {
-    const forecast: HourlyPm25[] = [
-      { dt: bkk(6), pm25: 40 },
-      { dt: bkk(12), pm25: 60 },
-      { dt: bkk(18), pm25: 50 },
-      { dt: bkk(6, 25), pm25: 200 }, // tomorrow -> ignored
-    ];
-    expect(avgPm25Today(forecast)).toBe(50);
-  });
-  it('returns null for no data', () => {
-    expect(avgPm25Today([])).toBeNull();
-  });
-});

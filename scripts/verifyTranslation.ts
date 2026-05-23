@@ -8,7 +8,7 @@
 import 'dotenv/config';
 import { createClient, translate, type TargetLanguage } from '../src/message/translate.js';
 import { buildPost } from '../src/pipeline.js';
-import type { AirQuality, HourlyPm25, Weather } from '../src/types.js';
+import type { AirQuality, Weather } from '../src/types.js';
 
 const apiKey = process.env.ANTHROPIC_API_KEY;
 if (!apiKey) {
@@ -18,7 +18,7 @@ if (!apiKey) {
 
 const bkk = (h: number): number => Date.UTC(2026, 4, 24, h - 7, 0, 0) / 1000;
 
-const airQuality: AirQuality = { pm25: 38 };
+const airQuality: AirQuality = { aqi: 53 };
 const weather: Weather = {
   current: { temp: 28.5, humidity: 80, uvi: 3, feelsLike: 33 },
   hourly: [
@@ -29,9 +29,7 @@ const weather: Weather = {
     { dt: bkk(18), temp: 28.5, humidity: 70, uvi: 1 },
   ],
 };
-const forecast: HourlyPm25[] = [bkk(5), bkk(6), bkk(17), bkk(18)].map((dt) => ({ dt, pm25: 33 }));
-
-const ko = buildPost(airQuality, weather, forecast, bkk(4));
+const ko = buildPost(airQuality, weather, bkk(4));
 console.log(ko);
 
 const client = createClient(apiKey);

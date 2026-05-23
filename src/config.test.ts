@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { requireEnv, LOCATION, THRESHOLDS, GOLDEN } from './config.js';
+import { requireEnv, LOCATION, GOLDEN } from './config.js';
 
 describe('requireEnv', () => {
   const KEY = 'WAT_RUN_TEST_VAR';
@@ -30,14 +30,9 @@ describe('constants', () => {
     expect(LOCATION.lon).toBeCloseTo(100.5601);
   });
 
-  it('encodes the verdict thresholds (WBGT recalibrated for Bangkok)', () => {
-    expect(THRESHOLDS.pm25).toEqual({ go: 35, caution: 55 });
-    expect(THRESHOLDS.wbgt).toEqual({ go: 30, caution: 32.5 });
-  });
-
-  it('encodes the golden-window thresholds and bands', () => {
-    expect(GOLDEN.best).toEqual({ wbgt: 30, pm25: 35 });
-    expect(GOLDEN.good).toEqual({ wbgt: 32.5, pm25: 50 });
+  it('encodes the golden-window thresholds (AQI air gate) and bands', () => {
+    expect(GOLDEN.best).toEqual({ wbgt: 30, aqi: 50 });
+    expect(GOLDEN.good).toEqual({ wbgt: 32.5, aqi: 100 });
     expect(GOLDEN.bands.dawn).toEqual([4, 9]);
     expect(GOLDEN.bands.evening).toEqual([17, 20]);
   });

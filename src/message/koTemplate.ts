@@ -1,4 +1,4 @@
-import { heatLabel, pm25Label, uvLabel } from '../logic/labels.js';
+import { airLabel, heatLabel, uvLabel } from '../logic/labels.js';
 import type { Conditions, Grade, TimeAdvice } from '../types.js';
 import { bangkokDateLabel } from '../util/time.js';
 
@@ -38,7 +38,7 @@ export function buildKoreanPost(
     '',
     `${VERDICT_EMOJI[c.grade]} ${VERDICT_LINE[c.grade]}`,
     '',
-    `😷 미세먼지: ${pm25Label(c.pm25)} (${Math.round(c.pm25)})`,
+    `😷 미세먼지: ${airLabel(c.aqi)} (AQI ${Math.round(c.aqi)})`,
     `🥵 한낮 더위: ${heatLabel(c.peakWbgt)} (최고 ${c.peakTemp.toFixed(1)}°C)`,
     `🧴 한낮 자외선: ${uvLabel(c.peakUv)} (최고 ${Math.round(c.peakUv)})`,
     '',

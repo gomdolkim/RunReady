@@ -10,22 +10,14 @@ export const LOCATION = { name: 'Benjakitti Park', lat: 13.7234, lon: 100.5601 }
 export const TRANSLATION_MODEL = 'claude-haiku-4-5';
 
 /**
- * Verdict thresholds (μg/m³ for PM2.5, °C for WBGT).
- * Grade is GO below `go`, CAUTION up to and including `caution`, SKIP above.
- *
- * WBGT thresholds are recalibrated upward from textbook sports-medicine values
- * so the verdict is a useful *relative* daily signal for acclimatised Bangkok
- * runners (where dawn WBGT is typically ~28–34) rather than a near-constant SKIP.
+ * Golden-window thresholds and the dawn/evening hour bands (Bangkok local).
+ * `wbgt` is heat (°C); `aqi` is the WAQI/aqicn US AQI gate (≤50 good, ≤100
+ * moderate). WBGT thresholds are tuned upward from textbook sports-medicine
+ * values so the signal is useful for acclimatised Bangkok runners.
  */
-export const THRESHOLDS = {
-  pm25: { go: 35, caution: 55 },
-  wbgt: { go: 30, caution: 32.5 },
-} as const;
-
-/** Golden-window thresholds and the dawn/evening hour bands (Bangkok local). */
 export const GOLDEN = {
-  best: { wbgt: 30, pm25: 35 },
-  good: { wbgt: 32.5, pm25: 50 },
+  best: { wbgt: 30, aqi: 50 },
+  good: { wbgt: 32.5, aqi: 100 },
   bands: { dawn: [4, 9], evening: [17, 20] },
 } as const;
 

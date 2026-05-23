@@ -12,18 +12,17 @@ stress (WBGT).
 
 ## How it decides
 
-| Metric | 🟢 GO | 🟡 CAUTION | 🔴 SKIP |
-|--------|-------|------------|---------|
-| PM2.5 (μg/m³) | < 35 | 35–55 | > 55 |
-| WBGT (°C) | < 30 | 30–32.5 | > 32.5 |
+The whole day is analysed (not a single snapshot), all at **Benjakitti Park**:
+- **Air (PM2.5):** WAQI/aqicn US AQI for the day — ≤50 좋음, ≤100 보통, ≤150 나쁨, else 매우 나쁨.
+- **Heat:** WBGT (Australian BoM approximation from temp + humidity, no solar term),
+  shown as the **midday peak**. Thresholds tuned upward for acclimatised Bangkok
+  runners: <30 좋음, <32.5 주의, <35 위험, else 매우 위험.
+- **UV:** the day's **peak** UV index (WHO bands).
 
-Data is sampled at **Benjakitti Park** (a popular Bangkok running spot). The final
-verdict is the **worse** of the two grades. WBGT is approximated from temperature
-and humidity using the Australian BoM formula (no solar term); its thresholds are
-tuned upward from textbook values so the verdict is a useful *relative* daily
-signal for acclimatised Bangkok runners rather than a near-constant SKIP.
-"Golden windows" are the best contiguous running hours in the dawn (04–09) and
-evening (17–20) bands.
+The **verdict** comes from the best runnable hour in the dawn (04–09) / evening
+(17–20) bands: a window needs acceptable heat **and** air (≤AQI 50 → GO, ≤AQI 100
+→ CAUTION, none → SKIP). The post also shows the best time to run, or the coolest
+hour when none qualifies.
 
 ## Setup
 
@@ -34,8 +33,8 @@ cp .env.example .env   # then fill in tokens
 
 | Variable | Source | Used in |
 |----------|--------|---------|
-| `WAQI_TOKEN` | https://aqicn.org/data-platform/token (free) | current PM2.5 |
-| `OPENWEATHER_API_KEY` | One Call API 3.0 subscription (free tier, card required) | weather + hourly PM2.5 |
+| `WAQI_TOKEN` | https://aqicn.org/data-platform/token (free) | PM2.5 AQI (current + daily forecast) |
+| `OPENWEATHER_API_KEY` | One Call API 3.0 subscription (free tier, card required) | weather (current + hourly) |
 | `ANTHROPIC_API_KEY` | https://console.anthropic.com | translation (Phase 2) |
 | `THREADS_ACCESS_TOKEN` | Meta for Developers | posting (Phase 3) |
 
@@ -64,8 +63,8 @@ src/
   types.ts             # domain model
   pipeline.ts          # data -> conditions -> Korean post (pure)
   index.ts             # entry point (fetch + print)
-  data/                # WAQI, OpenWeather One Call, OpenWeather Air Pollution
-  logic/               # wbgt, verdict, goldenWindow
+  data/                # WAQI (PM2.5 AQI), OpenWeather One Call (weather)
+  logic/               # wbgt, labels, verdict, goldenWindow, daySummary
   message/             # closingLines, koTemplate, translate, validate
   threads/             # post (create+publish), chain (3-post chain)
   util/                # time (Asia/Bangkok), http

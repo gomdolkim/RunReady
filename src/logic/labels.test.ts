@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { pm25Label, heatLabel, uvLabel } from './labels.js';
+import { airLabel, heatLabel, uvLabel } from './labels.js';
 
-describe('pm25Label', () => {
-  it('labels by Korean air-quality grade', () => {
-    expect(pm25Label(20)).toBe('좋음');
-    expect(pm25Label(34)).toBe('좋음');
-    expect(pm25Label(35)).toBe('보통');
-    expect(pm25Label(54)).toBe('보통');
-    expect(pm25Label(55)).toBe('나쁨');
-    expect(pm25Label(74)).toBe('나쁨');
-    expect(pm25Label(75)).toBe('매우 나쁨');
-    expect(pm25Label(120)).toBe('매우 나쁨');
+describe('airLabel', () => {
+  it('labels by US AQI band (aqicn scale)', () => {
+    expect(airLabel(30)).toBe('좋음');
+    expect(airLabel(50)).toBe('좋음');
+    expect(airLabel(51)).toBe('보통');
+    expect(airLabel(100)).toBe('보통');
+    expect(airLabel(101)).toBe('나쁨');
+    expect(airLabel(150)).toBe('나쁨');
+    expect(airLabel(151)).toBe('매우 나쁨');
+    expect(airLabel(300)).toBe('매우 나쁨');
   });
 });
 

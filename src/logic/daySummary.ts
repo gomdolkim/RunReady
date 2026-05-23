@@ -1,4 +1,4 @@
-import type { HourlyPm25, HourlyWeather } from '../types.js';
+import type { HourlyWeather } from '../types.js';
 import { bangkokDateKey } from '../util/time.js';
 import { wbgt } from './wbgt.js';
 
@@ -26,11 +26,4 @@ export function peakUv(hourly: HourlyWeather[]): number | null {
   const hours = today(hourly);
   if (hours.length === 0) return null;
   return Math.max(...hours.map((h) => h.uvi));
-}
-
-/** Average of today's hourly PM2.5 forecast, or null if no data. */
-export function avgPm25Today(forecast: HourlyPm25[]): number | null {
-  const values = today(forecast).map((f) => f.pm25);
-  if (values.length === 0) return null;
-  return values.reduce((sum, v) => sum + v, 0) / values.length;
 }

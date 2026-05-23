@@ -12,14 +12,14 @@ import { createClient, translate } from '../src/message/translate.js';
 import { buildPost } from '../src/pipeline.js';
 import { publishChain, type PostFn } from '../src/threads/chain.js';
 import { publishPost } from '../src/threads/post.js';
-import type { AirQuality, HourlyPm25, Weather } from '../src/types.js';
+import type { AirQuality, Weather } from '../src/types.js';
 
 const anthropicKey = requireEnv('ANTHROPIC_API_KEY');
 const threadsToken = requireEnv('THREADS_ACCESS_TOKEN');
 
 const bkk = (h: number): number => Date.UTC(2026, 4, 24, h - 7, 0, 0) / 1000;
 
-const airQuality: AirQuality = { pm25: 38 };
+const airQuality: AirQuality = { aqi: 53 };
 const weather: Weather = {
   current: { temp: 28.5, humidity: 80, uvi: 3, feelsLike: 33 },
   hourly: [
@@ -30,10 +30,8 @@ const weather: Weather = {
     { dt: bkk(18), temp: 28.5, humidity: 70, uvi: 1 },
   ],
 };
-const forecast: HourlyPm25[] = [bkk(5), bkk(6), bkk(17), bkk(18)].map((dt) => ({ dt, pm25: 33 }));
-
 const now = bkk(4);
-const ko = buildPost(airQuality, weather, forecast, now);
+const ko = buildPost(airQuality, weather, now);
 const client = createClient(anthropicKey);
 const en = await translate(client, ko, 'English', now);
 const th = await translate(client, ko, 'Thai', now);
