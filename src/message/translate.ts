@@ -77,6 +77,24 @@ export async function translate(
   return text;
 }
 
+/** Translate, returning null (and logging) on failure — replies are best-effort. */
+export async function translateSafe(
+  client: TranslationClient,
+  koText: string,
+  target: TargetLanguage,
+  dtSeconds: number,
+): Promise<string | null> {
+  try {
+    return await translate(client, koText, target, dtSeconds);
+  } catch (err: unknown) {
+    console.error(
+      `[wat-run] ${target} translation skipped:`,
+      err instanceof Error ? err.message : err,
+    );
+    return null;
+  }
+}
+
 /** Create a real Anthropic client from an API key. */
 export function createClient(apiKey: string): TranslationClient {
   return new Anthropic({ apiKey }) as unknown as TranslationClient;

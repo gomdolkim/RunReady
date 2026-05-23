@@ -3,33 +3,10 @@ import { requireEnv } from './config.js';
 import { fetchAirQuality } from './data/airQuality.js';
 import { fetchWeather } from './data/weather.js';
 import { pickImage } from './message/images.js';
-import {
-  createClient,
-  translate,
-  type TargetLanguage,
-  type TranslationClient,
-} from './message/translate.js';
+import { createClient, translateSafe } from './message/translate.js';
 import { buildPost } from './pipeline.js';
 import { publishChain, type PostFn } from './threads/chain.js';
 import { publishPost } from './threads/post.js';
-
-/** Translate, returning null (and logging) on failure — replies are best-effort. */
-async function translateSafe(
-  client: TranslationClient,
-  ko: string,
-  target: TargetLanguage,
-  dt: number,
-): Promise<string | null> {
-  try {
-    return await translate(client, ko, target, dt);
-  } catch (err: unknown) {
-    console.error(
-      `[wat-run] ${target} translation skipped:`,
-      err instanceof Error ? err.message : err,
-    );
-    return null;
-  }
-}
 
 /**
  * Entry point: fetch data → build Korean post → translate → publish the 3-post

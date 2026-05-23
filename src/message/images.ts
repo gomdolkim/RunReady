@@ -9,7 +9,8 @@ export const CAT_IMAGES: readonly string[] = Array.from(
   (_, i) => `${BASE}/${i + 1}.jpg`,
 );
 
-/** Pick today's cat image (rotates through the 10 by day of year). */
-export function pickImage(dtSeconds: number): string {
-  return pickByDay(CAT_IMAGES, dtSeconds);
+/** Pick a cat image (rotates by day of year). `offset` lets a second post pick
+ *  a different image on the same day. */
+export function pickImage(dtSeconds: number, offset = 0): string {
+  return pickByDay(CAT_IMAGES, dtSeconds, offset);
 }

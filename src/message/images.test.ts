@@ -16,4 +16,9 @@ describe('cat images', () => {
     expect(CAT_IMAGES).toContain(pickImage(DT));
     expect(pickImage(DT)).toBe(pickImage(DT));
   });
+
+  it('an offset picks a different image on the same day', () => {
+    expect(pickImage(DT, 5)).not.toBe(pickImage(DT));
+    expect(CAT_IMAGES).toContain(pickImage(DT, 5));
+  });
 });

@@ -8,6 +8,7 @@ import {
   formatClock,
   dayOfYear,
   pickByDay,
+  bangkokWeekday,
 } from './time.js';
 
 // 2026-05-24 05:00 Bangkok == 2026-05-23 22:00 UTC
@@ -60,6 +61,13 @@ describe('formatClock', () => {
     expect(formatClock(5)).toBe('05:00');
     expect(formatClock(17)).toBe('17:00');
     expect(formatClock(0)).toBe('00:00');
+  });
+});
+
+describe('bangkokWeekday', () => {
+  it('returns 0..6 (Sun..Sat) for the Bangkok date', () => {
+    expect(bangkokWeekday(DAWN)).toBe(0); // 2026-05-24 is Sunday
+    expect(bangkokWeekday(DAWN + 2 * 86400)).toBe(2); // Tuesday
   });
 });
 

@@ -1,0 +1,51 @@
+name: Wat Run Evening Post
+
+on:
+  # Bangkok 18:00 == UTC 11:00. Announces tomorrow's workout.
+  schedule:
+    - cron: '0 11 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Print the post without publishing to Threads'
+        type: boolean
+        default: true
+
+concurrency:
+  group: evening-post
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Post tomorrow's workout
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
+        run: |
+          # Manual runs default to a safe dry-run; scheduled runs publish.
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.dry_run }}" = "true" ]; then
+            echo "Running in dry-run mode (no publishing)."
+            npm run start:evening -- --dry-run
+          else
+            echo "Publishing to Threads."
+            npm run start:evening
+          fi

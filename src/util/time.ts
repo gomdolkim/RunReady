@@ -55,6 +55,11 @@ export function bangkokDateLabel(dtSeconds: number): string {
   return `${p.year}.${p.month}.${p.day} (${KO_WEEKDAYS[dayOfWeek(p)]!})`;
 }
 
+/** Day of week in Bangkok: 0 = Sunday … 6 = Saturday. */
+export function bangkokWeekday(dtSeconds: number): number {
+  return dayOfWeek(parts(dtSeconds));
+}
+
 /** English date label, e.g. "May 24, 2026 (Sun)". */
 export function enDateLabel(dtSeconds: number): string {
   const p = parts(dtSeconds);
