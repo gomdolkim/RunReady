@@ -3,10 +3,13 @@
 /** Traffic-light grade. Kept as English in all languages per spec. */
 export type Grade = 'GO' | 'CAUTION' | 'SKIP';
 
-/** Air quality from WAQI/aqicn — the US AQI value (same scale aqicn apps show). */
+/** Air quality from WAQI/aqicn — US AQI (same scale aqicn apps show). */
 export interface AirQuality {
-  /** Today's PM2.5 US AQI (daily forecast average, else current). */
-  aqi: number;
+  /** Today's PM2.5 US AQI: daily forecast average (used to gate windows). */
+  avg: number;
+  /** Daily forecast min and max (shown as a range). */
+  min: number;
+  max: number;
 }
 
 /** A single hour of weather. */
@@ -63,8 +66,9 @@ export type Outcome = 'dawn' | 'evening' | 'both' | 'indoor';
 
 /** Everything needed to render a post — runner-centric (dawn vs evening). */
 export interface Conditions {
-  /** Today's PM2.5 US AQI (from WAQI) — daily, shown once. */
-  aqi: number;
+  /** Today's PM2.5 US AQI range (from WAQI), shown once. */
+  aqiMin: number;
+  aqiMax: number;
   dawn: BandReport;
   evening: BandReport;
   /** Which time of day to recommend. */

@@ -6,7 +6,8 @@ import type { Conditions } from '../types.js';
 const DT = Date.UTC(2026, 4, 23, 22, 0, 0) / 1000;
 
 const base: Conditions = {
-  aqi: 111,
+  aqiMin: 68,
+  aqiMax: 152,
   dawn: {
     available: true,
     grade: 'CAUTION',
@@ -34,7 +35,7 @@ describe('buildKoreanPost', () => {
     const lines = post.split('\n');
     expect(lines[0]).toBe('방콕, 오늘 언제 뛸까? 🏃');
     expect(lines[1]).toBe('2026.05.24 (일)');
-    expect(post).toContain('😷 미세먼지: 나쁨 (AQI 111)');
+    expect(post).toContain('😷 미세먼지: 보통~매우 나쁨 (AQI 68~152)');
     expect(post).toContain('🌅 새벽 🟡 5–7시 · 더위 주의 28°C · 자외선 낮음');
     expect(post).toContain('🌆 저녁 🔴 18시쯤 · 더위 위험 33°C · 자외선 보통');
     expect(post).toContain('오늘은 새벽이 베스트! 🌅');

@@ -18,7 +18,7 @@ if (!apiKey) {
 
 const bkk = (h: number): number => Date.UTC(2026, 4, 24, h - 7, 0, 0) / 1000;
 
-const airQuality: AirQuality = { aqi: 53 };
+const airQuality: AirQuality = { avg: 90, min: 53, max: 130 };
 const weather: Weather = {
   current: { temp: 28.5, humidity: 80, uvi: 3, feelsLike: 33 },
   hourly: [

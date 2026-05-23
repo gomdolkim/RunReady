@@ -11,9 +11,9 @@ import type { AirQuality, Conditions, Weather } from './types.js';
  * air, then decide which band to recommend.
  */
 export function buildConditions(aq: AirQuality, weather: Weather): Conditions {
-  const dawn = analyzeBand(weather.hourly, GOLDEN.bands.dawn, aq.aqi);
-  const evening = analyzeBand(weather.hourly, GOLDEN.bands.evening, aq.aqi);
-  return { aqi: aq.aqi, dawn, evening, outcome: decideOutcome(dawn, evening) };
+  const dawn = analyzeBand(weather.hourly, GOLDEN.bands.dawn, aq.avg);
+  const evening = analyzeBand(weather.hourly, GOLDEN.bands.evening, aq.avg);
+  return { aqiMin: aq.min, aqiMax: aq.max, dawn, evening, outcome: decideOutcome(dawn, evening) };
 }
 
 /**

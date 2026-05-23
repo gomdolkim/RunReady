@@ -10,24 +10,24 @@ function mockFetch(payload: unknown, ok = true) {
 afterEach(() => vi.unstubAllGlobals());
 
 describe('fetchAirQuality', () => {
-  it("uses today's daily forecast average AQI when available", async () => {
+  it("uses today's daily forecast avg/min/max when available", async () => {
     const fn = mockFetch({
       status: 'ok',
       data: {
         iaqi: { pm25: { v: 53 } },
-        forecast: { daily: { pm25: [{ day: '2099-01-01', avg: 60 }] } },
+        forecast: { daily: { pm25: [{ day: '2099-01-01', avg: 107, min: 68, max: 152 }] } },
       },
     });
-    expect(await fetchAirQuality('tok123')).toEqual({ aqi: 60 });
+    expect(await fetchAirQuality('tok123')).toEqual({ avg: 107, min: 68, max: 152 });
     const url = String(fn.mock.calls[0]![0]);
     expect(url).toContain('waqi.info');
     expect(url).toContain('geo:13.7234;100.5601');
     expect(url).toContain('token=tok123');
   });
 
-  it('falls back to the current AQI when there is no forecast', async () => {
+  it('falls back to the current AQI (flat range) when there is no forecast', async () => {
     mockFetch({ status: 'ok', data: { iaqi: { pm25: { v: 53 } } } });
-    expect(await fetchAirQuality('tok')).toEqual({ aqi: 53 });
+    expect(await fetchAirQuality('tok')).toEqual({ avg: 53, min: 53, max: 53 });
   });
 
   it('rejects when WAQI status is not ok', async () => {

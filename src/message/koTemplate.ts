@@ -15,6 +15,15 @@ function timeText(band: BandReport): string {
   return '정보 없음';
 }
 
+/** Air-quality line value: label range + AQI range (collapses when min === max). */
+function airText(min: number, max: number): string {
+  const loLabel = airLabel(min);
+  const hiLabel = airLabel(max);
+  const label = loLabel === hiLabel ? loLabel : `${loLabel}~${hiLabel}`;
+  const value = min === max ? `AQI ${min}` : `AQI ${min}~${max}`;
+  return `${label} (${value})`;
+}
+
 function bandLine(emoji: string, label: string, band: BandReport): string {
   if (!band.available) return `${emoji} ${label}: 정보 없음`;
   return (
@@ -38,7 +47,7 @@ export function buildKoreanPost(
     hook,
     bangkokDateLabel(dtSeconds),
     '',
-    `😷 미세먼지: ${airLabel(c.aqi)} (AQI ${Math.round(c.aqi)})`,
+    `😷 미세먼지: ${airText(Math.round(c.aqiMin), Math.round(c.aqiMax))}`,
     '',
     bandLine('🌅', '새벽', c.dawn),
     bandLine('🌆', '저녁', c.evening),

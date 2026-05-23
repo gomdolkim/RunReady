@@ -7,14 +7,14 @@ interface WaqiResponse {
   status?: string;
   data?: {
     iaqi?: { pm25?: { v?: number } };
-    forecast?: { daily?: { pm25?: Array<{ day?: string; avg?: number }> } };
+    forecast?: { daily?: { pm25?: Array<{ day?: string; avg?: number; min?: number; max?: number }> } };
   };
 }
 
 /**
  * Fetch today's PM2.5 US AQI for the location from WAQI/aqicn (geo feed).
- * Prefers the daily forecast average for today (whole-day) and falls back to
- * the current reading. The value is the US AQI — the same scale aqicn shows.
+ * Prefers the daily forecast (avg/min/max for today) and falls back to the
+ * current reading. The value is the US AQI — the same scale aqicn shows.
  */
 export async function fetchAirQuality(token: string): Promise<AirQuality> {
   const url =
@@ -26,14 +26,18 @@ export async function fetchAirQuality(token: string): Promise<AirQuality> {
     throw new Error(`WAQI returned status "${body.status ?? 'unknown'}"`);
   }
 
-  const current = body.data?.iaqi?.pm25?.v;
   const daily = body.data?.forecast?.daily?.pm25 ?? [];
   const todayKey = bangkokDateKey(Math.floor(Date.now() / 1000));
-  const todayEntry = daily.find((d) => d.day === todayKey) ?? daily[0];
+  const today = daily.find((d) => d.day === todayKey) ?? daily[0];
 
-  const aqi = todayEntry?.avg ?? current;
-  if (typeof aqi !== 'number') {
-    throw new Error('WAQI feed missing PM2.5 reading');
+  if (today && typeof today.avg === 'number') {
+    const avg = today.avg;
+    return { avg, min: today.min ?? avg, max: today.max ?? avg };
   }
-  return { aqi };
+
+  const current = body.data?.iaqi?.pm25?.v;
+  if (typeof current === 'number') {
+    return { avg: current, min: current, max: current };
+  }
+  throw new Error('WAQI feed missing PM2.5 reading');
 }
