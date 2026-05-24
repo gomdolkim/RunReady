@@ -2,8 +2,8 @@ name: Bangkok Run Morning Post
 
 on:
   # Bangkok 04:00 == UTC 21:00 (previous day).
-  # ⚠️ Active: requires all 4 repository secrets to be set, or scheduled runs
-  # fail every morning.
+  # ⚠️ Active: requires WAQI_TOKEN, ANTHROPIC_API_KEY, and THREADS_ACCESS_TOKEN
+  # repository secrets to be set, or scheduled runs fail every morning.
   schedule:
     - cron: '0 21 * * *'
   workflow_dispatch:
@@ -42,7 +42,6 @@ jobs:
       - name: Post to Threads
         env:
           WAQI_TOKEN: ${{ secrets.WAQI_TOKEN }}
-          OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
         run: |

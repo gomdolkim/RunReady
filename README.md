@@ -1,72 +1,76 @@
-# Wat Run? 🐱🏃
+# Wat Run? 🐱🏃 — 소이캣의 방콕 러닝
 
-A daily Bangkok running bot for the **김치팍치** runner community. It posts to
-Threads in **Korean, English, and Thai**, twice a day, each with a different cute
-cat illustration:
+A daily Bangkok running bot for Threads, narrated by **소이캣 (Soi Cat)** — a warm,
+encouraging Bangkok street-cat coach. It posts in **Korean, English, and Thai**,
+twice a day, each with a cute cat illustration:
 
-- **04:00 Bangkok** — today's conditions: *when to run* (dawn vs evening), the
-  heat/UV/air at those times, and a recommendation.
-- **18:00 Bangkok** — **tomorrow's** workout, so runners can plan ahead.
+- **05:00 Bangkok — 오늘의 스팟:** Soi Cat picks one real Bangkok running spot for
+  the day and reports *that spot's* accurate conditions (heat / air / UV), the best
+  window to run, and a warm one-line coach note.
+- **18:00 Bangkok — 저녁 한 컷:** a light rotation post (poll / haiku / running
+  trivia / run-then-eat tip) to keep the feed alive and varied.
 
 > Status: **live.** Two GitHub Actions cron jobs run daily. Account:
 > [@coffeepacer](https://www.threads.com/@coffeepacer).
 
 Each post is one connected thread: a **Korean main post (with a cat image)**, then
-an **English** reply and a **Thai** reply. Dates, labels and times localize per
-language (Thai uses the Buddhist year).
+an **English** reply and a **Thai** reply. Dates and the mascot name localize per
+language (Thai uses the Buddhist year); discovery hashtags are appended per language.
 
 ## What it posts
 
-**Morning (04:00) — conditions**
+**Morning (05:00) — 오늘의 스팟**
 ```
-방콕, 오늘은 어느 시간에 뛸까? 🌅🌆         ← rotating hook
+🐱 소이캣의 오늘의 스팟
 2026.05.24 (일)
 
-😷 미세먼지: 보통~매우 나쁨 (AQI 68~152)     ← today's AQI range (WAQI/aqicn)
+📍 벤짜낏 포레스트파크 · 아속/클롱토이
+도심 속 숲길과 호수 데크 루프. 그늘이 많아 더위에 강해요.
 
-🌅 새벽 🟢 5–7시 · 더위 좋음 26°C · 자외선 낮음
-🌆 저녁 🔴 19시쯤 · 더위 위험 33°C · 자외선 보통
+🟢 지금 뛰기 좋아요
+🌡️ 26°C 좋음 · 💨 AQI 42 좋음 · ☀️ 자외선 낮음
+⏰ 베스트 창: 5–7시
 
-오늘은 새벽이 베스트! 시원할 때 달려요 🌅   ← rotating recommendation
+오늘은 여기야. 천천히 한 바퀴, 무리하지 말고 — 소이캣
+
+#방콕러닝 #BangkokRunning #Benjakitti
 ```
 
-**Evening (18:00) — tomorrow's workout**
+**Evening (18:00) — 저녁 한 컷**
 ```
-내일은 어떤 운동? 💪                        ← rotating hook
+🐱 소이캣의 저녁 한 컷
 2026.05.24 (일)
 
-🏃 내일 운동: 인터벌
-400m × 5 (사이 200m 조깅 회복)
+내일은 어디서 뛸래?
+🌅 룸피니 / 🌆 강변 / 🏞️ 라마9 공원
+댓글로 알려줘 👇 내일 아침 소이캣이 컨디션 봐줄게.
 
-🌡️ 한낮은 피하고 새벽·저녁에 · 수분 충분히 💧
-💪 무리는 금물, 컨디션 따라 조절해요         ← rotating coach note
+#방콕러닝 #BangkokRunning
 ```
 
 ## How the morning post decides
 
-Nobody runs in Bangkok's midday heat, so it compares the two times people
-actually run, using the day's **hourly** forecast at **Benjakitti Park**:
+Each day rotates to one spot from a curated list of real Bangkok parks/routes
+(`content/spots.ts`). For that spot it grades the **dawn band (04–09)** using the
+day's **hourly** forecast:
 
-- **🌅 새벽 dawn (04–09)** and **🌆 저녁 evening (17–20)** are each graded
-  🟢/🟡/🔴 from the heat and air **at that time**.
 - **Heat:** WBGT (Australian BoM approximation from temperature + humidity), tuned
   for acclimatised Bangkok runners — 좋음 `<30`, 주의 `<32.5`, 위험 `<35`, else 매우 위험.
-- **Air (PM2.5):** the day's **US AQI range** from WAQI/aqicn (the scale the
-  aqicn/IQAir apps show), gated at ≤50 (best) / ≤100 (acceptable).
-- **UV:** the UV index at the run time (low at dawn/evening — part of why those
-  times are better).
-- The bot recommends **dawn / evening / both / indoor**; the hook + recommendation
-  **rotate by day** so it never repeats.
+- **Air (PM2.5):** the US AQI from the **WAQI station nearest the spot's
+  coordinates** (the scale aqicn/IQAir apps show), gated at ≤50 (best) / ≤100 (ok).
+  The station name is shown in dry-run output for transparency.
+- **UV & rain:** the UV index at the run time, plus a 🌧️ hint when dawn
+  precipitation probability is high.
+- The verdict is 🟢/🟡/🔴; the spot, coach line, and evening content **rotate by
+  day** so nothing repeats until the pool is exhausted.
 
-> Why not OpenWeather for air? Its global model badly underestimated Bangkok
-> PM2.5 (≈1 µg/m³ vs the aqicn station's AQI ~107), so air comes from WAQI.
+### Data sources
+- **Weather / UV / rain:** [Open-Meteo](https://open-meteo.com) — free, no API key.
+- **Air (PM2.5):** [WAQI/aqicn](https://aqicn.org) geo feed, queried per spot.
 
-## The evening workout
-
-A simple **weekly training rhythm** (weekday → type) with the specific session
-rotating by week: Mon/Fri rest, Tue intervals, Wed easy, Thu tempo, Sat long run,
-Sun recovery. Intensities are moderate and every post reminds runners to adjust
-to their condition and run at dawn/evening.
+> Why these? OpenWeather's global model badly underestimated Bangkok PM2.5, and the
+> official Air4Thai endpoint serves an expired TLS certificate — so weather moved to
+> Open-Meteo (also drops the card-required key) and air uses WAQI per spot.
 
 ## Setup
 
@@ -77,21 +81,21 @@ cp .env.example .env   # then fill in tokens
 
 | Variable | Source | Used for |
 |----------|--------|----------|
-| `WAQI_TOKEN` | https://aqicn.org/data-platform/token (free) | PM2.5 AQI (daily forecast) |
-| `OPENWEATHER_API_KEY` | One Call API 3.0 (free tier, card required) | hourly weather (morning only) |
+| `WAQI_TOKEN` | https://aqicn.org/data-platform/token (free) | per-spot PM2.5 AQI |
 | `ANTHROPIC_API_KEY` | https://console.anthropic.com | EN/TH translation (`claude-haiku-4-5`) |
 | `THREADS_ACCESS_TOKEN` | Meta for Developers (long-lived, 60-day) | posting |
 
-The evening post needs only `ANTHROPIC_API_KEY` + `THREADS_ACCESS_TOKEN`. Local
-runs load `.env` automatically (via `dotenv`); GitHub Actions uses repo secrets.
+Weather needs **no key** (Open-Meteo). The evening post needs only
+`ANTHROPIC_API_KEY` + `THREADS_ACCESS_TOKEN`. Local runs load `.env` automatically
+(via `dotenv`); GitHub Actions uses repo secrets.
 
 ## Scripts
 
 ```bash
-npm test                  # vitest suite (96 tests)
+npm test                  # vitest suite
 npm run typecheck         # tsc --noEmit
 npm run build             # compile to dist/
-npm start                 # morning post + publish (needs all 4 keys)
+npm start                 # morning post + publish (WAQI + ANTHROPIC + THREADS)
 npm run start:evening     # evening post + publish (ANTHROPIC + THREADS)
 npm run dry               # morning pipeline, print only — no publishing
 npm run dry:evening       # evening pipeline, print only — no publishing
@@ -111,8 +115,8 @@ update the count in `images.ts`.
 
 Two daily workflows (manual **Run workflow** defaults to a safe **dry run**):
 
-- `morning-post.yml` — cron `0 21 * * *` (Bangkok 04:00), today's conditions.
-- `evening-post.yml` — cron `0 11 * * *` (Bangkok 18:00), tomorrow's workout.
+- `morning-post.yml` — cron `0 21 * * *` (Bangkok 05:00), today's spot.
+- `evening-post.yml` — cron `0 11 * * *` (Bangkok 18:00), light rotation post.
 - `ci.yml` — typecheck + tests + build on every push/PR.
 
 All secrets must be set in the repo (Settings → Secrets and variables → Actions).
@@ -121,29 +125,33 @@ All secrets must be set in the repo (Settings → Secrets and variables → Acti
 
 ```
 src/
-  config.ts            # constants (location, thresholds) + env validation
-  types.ts             # domain model
-  pipeline.ts          # data -> conditions -> Korean morning post
-  index.ts             # morning entry (fetch -> translate -> publish)
-  evening.ts           # evening entry (tomorrow's workout)
-  content/             # workout (weekday plan + sessions + coach notes)
-  data/                # airQuality (WAQI), weather (OpenWeather One Call)
-  logic/               # wbgt, labels, goldenWindow, bands (dawn/evening + outcome)
-  message/             # hooks, recommend, koTemplate, eveningHooks, eveningTemplate,
-                       #   translate, validate, images
+  config.ts            # constants (thresholds) + env validation
+  types.ts             # domain model (Spot, SpotAir, SpotConditions, …)
+  pipeline.ts          # spot + weather + air -> SpotConditions
+  index.ts             # morning entry (pick spot -> fetch -> translate -> publish)
+  evening.ts           # evening entry (light rotation)
+  content/             # spots (dataset), coachLines (Soi Cat notes)
+  data/                # openMeteo (weather/UV/rain), airQuality (WAQI per-spot)
+  logic/               # wbgt, labels, goldenWindow, bands, rain
+  message/             # spotTemplate, eveningRotation, tags, translate, validate, images
   threads/             # post (TEXT/IMAGE), chain (KO->EN->TH connected thread)
-  util/                # time (Asia/Bangkok, date labels, weekday, day rotation), http
+  util/                # time (Asia/Bangkok, date labels, day rotation), http
 images/                # 10 daily cat illustrations (JPEG)
 scripts/               # verifyTranslation, verifyThreads (live checks)
 .github/workflows/     # morning-post.yml, evening-post.yml, ci.yml
+docs/superpowers/      # design spec + implementation plan for v2
 ```
 
 ## Notes
 
 - **Korean-first, no mixed English.** The verdict is 🟢/🟡/🔴 + Korean; the
   traffic-light emoji carries it across all three languages.
+- **소이캣 = Soi Cat / ซอยแคท.** The mascot name is pinned in the translation prompt
+  so it is never re-translated to a cat breed.
 - **Dates are computed in code** (KO/EN/TH, incl. Thai Buddhist year) — LLMs are
   unreliable at weekday/Buddhist-year conversion, so the model never sets them.
+- **Hashtags are appended in code** after translation (per language), so the
+  translator never has to preserve Korean tags.
 - **Translations are validated** — length, preserved emojis/numbers, and a check
   that no Korean is left untranslated; a failing reply is skipped, not posted broken.
 - **Fail-visible.** Missing data/keys aborts before posting; the Korean post is
