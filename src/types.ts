@@ -21,6 +21,8 @@ export interface HourlyWeather {
   humidity: number;
   /** UV index for the hour. */
   uvi: number;
+  /** Precipitation probability in % (Open-Meteo). Optional for legacy sources. */
+  precipProb?: number;
 }
 
 /** Current conditions plus an hourly forecast (from OpenWeather One Call). */
@@ -73,4 +75,52 @@ export interface Conditions {
   evening: BandReport;
   /** Which time of day to recommend. */
   outcome: Outcome;
+}
+
+/** Air reading at a specific spot, from the WAQI station nearest its coords. */
+export interface SpotAir {
+  /** PM2.5 US AQI (rounded). */
+  aqi: number;
+  /** Name of the WAQI station the reading came from. */
+  station: string;
+}
+
+/** A real Bangkok running spot. Coordinates are approximate park centroids. */
+export interface Spot {
+  /** Stable slug id. */
+  id: string;
+  nameKo: string;
+  nameEn: string;
+  nameTh: string;
+  /** Korean neighbourhood label, e.g. "아속/클롱토이". */
+  area: string;
+  /** One-line Korean description (vibe + why it's good to run). */
+  blurbKo: string;
+  lat: number;
+  lon: number;
+  /** Approximate loop distance in km (data only; for future filtering). */
+  loopKm: number;
+  /** Shade rating 0 (exposed) – 3 (very shaded). */
+  shade: 0 | 1 | 2 | 3;
+  /** English hashtag token (no spaces), e.g. "Benjakitti". */
+  tag: string;
+}
+
+/** Everything needed to render a "spot of the day" post. */
+export interface SpotConditions {
+  spot: Spot;
+  grade: Grade;
+  /** Best contiguous dawn window, if one qualifies. */
+  window: GoldenWindow | null;
+  /** Coolest dawn hour (fallback time), or null. */
+  bestHour: number | null;
+  /** Conditions at the best dawn hour. */
+  wbgt: number;
+  temp: number;
+  uvi: number;
+  /** Air at the spot. */
+  aqi: number;
+  station: string;
+  /** Rain hint line, or null. */
+  rainHint: string | null;
 }
