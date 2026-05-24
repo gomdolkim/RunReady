@@ -29,7 +29,7 @@ language (Thai uses the Buddhist year); discovery hashtags are appended per lang
 
 🟢 지금 뛰기 좋아요
 🌡️ 26°C 좋음 · 💨 AQI 42 좋음 · ☀️ 자외선 낮음
-⏰ 베스트 창: 5–7시
+⏰ 뛰기 좋은 시간: 5–7시
 
 오늘은 여기야. 천천히 한 바퀴, 무리하지 말고 — 소이캣
 

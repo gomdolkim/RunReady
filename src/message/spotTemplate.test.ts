@@ -27,7 +27,7 @@ describe('buildSpotPost', () => {
     expect(post).toContain('📍 벤짜낏 포레스트파크 · 아속/클롱토이');
     expect(post).toContain('🟢 지금 뛰기 좋아요');
     expect(post).toContain('🌡️ 26°C 좋음 · 💨 AQI 42 좋음 · ☀️ 자외선 낮음');
-    expect(post).toContain('⏰ 베스트 창: 5–7시');
+    expect(post).toContain('⏰ 뛰기 좋은 시간: 5–7시');
     expect(post).toContain('오늘은 여기야. 천천히 한 바퀴 — 소이캣');
     expect(post).not.toContain('🌧️');
     expect(post).not.toMatch(/\b(GO|CAUTION|SKIP)\b/);
@@ -41,6 +41,6 @@ describe('buildSpotPost', () => {
   it('falls back to the best hour when there is no window', () => {
     const post = buildSpotPost({ ...base, grade: 'CAUTION', window: null, bestHour: 6 }, bkk(5), 'x');
     expect(post).toContain('🟡 뛸 만해요, 컨디션 보며');
-    expect(post).toContain('⏰ 베스트 창: 6시쯤');
+    expect(post).toContain('⏰ 뛰기 좋은 시간: 6시쯤');
   });
 });

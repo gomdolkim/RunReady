@@ -36,7 +36,7 @@ export function buildSpotPost(c: SpotConditions, dtSeconds: number, coachLine: s
     '',
     `${GRADE_EMOJI[c.grade]} ${GRADE_TEXT[c.grade]}`,
     `🌡️ ${Math.round(c.temp)}°C ${heatLabel(c.wbgt)} · 💨 AQI ${c.aqi} ${airLabel(c.aqi)} · ☀️ 자외선 ${uvLabel(c.uvi)}`,
-    `⏰ 베스트 창: ${windowText(c)}`,
+    `⏰ 뛰기 좋은 시간: ${windowText(c)}`,
   ];
   if (c.rainHint) lines.push(c.rainHint);
   lines.push('', `${coachLine} — 소이캣`);
