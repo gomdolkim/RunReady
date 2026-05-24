@@ -2,10 +2,6 @@
 
 export const TIMEZONE = 'Asia/Bangkok';
 
-/** Target location for weather and air-quality lookups: Benjakitti Park,
- *  a popular Bangkok running spot (approximate coordinates). */
-export const LOCATION = { name: 'Benjakitti Park', lat: 13.7234, lon: 100.5601 } as const;
-
 /** Anthropic model used for translation (Phase 2). */
 export const TRANSLATION_MODEL = 'claude-haiku-4-5';
 

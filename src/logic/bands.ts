@@ -1,4 +1,4 @@
-import type { BandReport, Grade, HourlyWeather, Outcome } from '../types.js';
+import type { BandReport, Grade, HourlyWeather } from '../types.js';
 import { bangkokDateKey, bangkokHour } from '../util/time.js';
 import { buildWindows, classifyHour } from './goldenWindow.js';
 import { wbgt } from './wbgt.js';
@@ -81,16 +81,4 @@ export function analyzeBand(
     temp: coolest.temp,
     uvi: coolest.uvi,
   };
-}
-
-const SEVERITY: Record<Grade, number> = { GO: 0, CAUTION: 1, SKIP: 2 };
-
-/** Decide which time of day to recommend from the two band grades. */
-export function decideOutcome(dawn: BandReport, evening: BandReport): Outcome {
-  if (dawn.grade === 'SKIP' && evening.grade === 'SKIP') return 'indoor';
-  const d = SEVERITY[dawn.grade];
-  const e = SEVERITY[evening.grade];
-  if (d < e) return 'dawn';
-  if (e < d) return 'evening';
-  return 'both';
 }

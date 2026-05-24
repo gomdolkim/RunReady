@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { requireEnv, LOCATION, GOLDEN } from './config.js';
+import { requireEnv, GOLDEN } from './config.js';
 
 describe('requireEnv', () => {
   const KEY = 'WAT_RUN_TEST_VAR';
@@ -24,12 +24,6 @@ describe('requireEnv', () => {
 });
 
 describe('constants', () => {
-  it('points at Benjakitti Park', () => {
-    expect(LOCATION.name).toMatch(/Benjakitti/);
-    expect(LOCATION.lat).toBeCloseTo(13.7234);
-    expect(LOCATION.lon).toBeCloseTo(100.5601);
-  });
-
   it('encodes the golden-window thresholds (AQI air gate) and bands', () => {
     expect(GOLDEN.best).toEqual({ wbgt: 30, aqi: 50 });
     expect(GOLDEN.good).toEqual({ wbgt: 32.5, aqi: 100 });

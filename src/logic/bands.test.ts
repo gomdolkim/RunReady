@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { analyzeBand, decideOutcome } from './bands.js';
-import type { BandReport, Grade, HourlyWeather } from '../types.js';
+import { analyzeBand } from './bands.js';
+import type { HourlyWeather } from '../types.js';
 
 const bkk = (h: number, day = 24) => Date.UTC(2026, 4, day, h - 7, 0, 0) / 1000;
 const wx = (h: number, temp: number, humidity: number, uvi: number): HourlyWeather => ({
@@ -43,32 +43,5 @@ describe('analyzeBand', () => {
     const dawn = analyzeBand([wx(13, 30, 60, 5)], [4, 9], 40);
     expect(dawn.available).toBe(false);
     expect(dawn.grade).toBe('SKIP');
-  });
-});
-
-describe('decideOutcome', () => {
-  const report = (grade: Grade): BandReport => ({
-    available: true,
-    grade,
-    window: null,
-    coolestHour: 5,
-    wbgt: 30,
-    temp: 28,
-    uvi: 1,
-  });
-
-  it('recommends the better band', () => {
-    expect(decideOutcome(report('GO'), report('CAUTION'))).toBe('dawn');
-    expect(decideOutcome(report('CAUTION'), report('GO'))).toBe('evening');
-    expect(decideOutcome(report('CAUTION'), report('SKIP'))).toBe('dawn');
-  });
-
-  it('recommends both when equal and runnable', () => {
-    expect(decideOutcome(report('GO'), report('GO'))).toBe('both');
-    expect(decideOutcome(report('CAUTION'), report('CAUTION'))).toBe('both');
-  });
-
-  it('recommends indoor when both are SKIP', () => {
-    expect(decideOutcome(report('SKIP'), report('SKIP'))).toBe('indoor');
   });
 });
