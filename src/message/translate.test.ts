@@ -36,6 +36,11 @@ describe('buildSystemPrompt', () => {
   it('targets Thai', () => {
     expect(buildSystemPrompt('Thai')).toContain('from Korean to Thai');
   });
+
+  it('pins the mascot name so 소이캣 is not translated to a breed', () => {
+    expect(buildSystemPrompt('English')).toContain('Soi Cat');
+    expect(buildSystemPrompt('Thai')).toContain('ซอยแคท');
+  });
 });
 
 describe('translate', () => {

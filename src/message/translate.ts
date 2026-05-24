@@ -32,6 +32,9 @@ Rules:
   separately in code.
 - Translate the FIRST line (the headline) naturally and catchily — it is a hook.
 - Keep the traffic-light emojis (🟢 🟡 🔴) as-is; they signal today's verdict.
+- "소이캣" is the mascot's name (a friendly Bangkok street cat). ALWAYS render it
+  as "Soi Cat" in English and "ซอยแคท" in Thai — never translate it to a cat
+  breed (e.g. "Siamese cat") or any other word.
 - Use a friendly, motivating social-media tone that encourages people to run.
 - For Thai, use a casual but respectful tone.
 
