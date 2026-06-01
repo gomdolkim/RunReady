@@ -1,7 +1,7 @@
 # Wat Run? 🐱 — 소이캣의 방콕
 
 A daily Bangkok bot for Threads, narrated by **소이캣 (Soi Cat)** — a warm,
-encouraging Bangkok street cat. It posts in **Korean**, with a cute cat illustration.
+encouraging Bangkok street cat. It posts in **Korean**.
 
 **Current mode — 오늘의 방콕 (place of the day).** Once a day in the morning,
 Soi Cat introduces **one real Bangkok place worth visiting** (temple, palace,
@@ -12,7 +12,7 @@ of **50 places**, one per day in order, cycling back to the start after 50 days.
 > Status: **live, morning only, Korean only.** One GitHub Actions cron job runs
 > daily. Account: [@coffeepacer](https://www.threads.com/@coffeepacer).
 
-Each post is a single **Korean post with a cat image** — no English/Thai replies.
+Each post is a single **Korean text post** — no English/Thai replies, no image.
 The date is computed in code; discovery hashtags are appended.
 
 > The afternoon/evening post and the running-conditions ("오늘의 스팟") morning post
@@ -87,10 +87,9 @@ npm run verify:translate  # live KO->EN/TH check (needs ANTHROPIC_API_KEY)
 
 ## Daily images
 
-`images/1.jpg … images/10.jpg` are 10 cute cat illustrations (optimized
-~1600×872 JPEG), served from the repo via raw GitHub URLs. One is chosen per day
-(`message/images.ts`, day-of-year rotation). To change the set, drop new JPEGs in
-`images/` and update the count in `images.ts`.
+The active morning place post is **text only — no image**. The `images/1.jpg …
+images/10.jpg` cat illustrations and `message/images.ts` remain for the dormant
+running/evening posts.
 
 ## Automation
 
