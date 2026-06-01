@@ -4,14 +4,19 @@ import { pickByDay } from '../util/time.js';
 /**
  * 50 curated, real Bangkok places worth visiting — temples, palaces, museums,
  * parks, markets, riverside spots, landmarks and a couple of day-trip parks.
- * Restaurants are intentionally excluded. The morning post walks through these
- * one per day, in array order, cycling back to the start after 50 days.
+ * Restaurants are intentionally excluded.
+ *
+ * CATALOG holds the entries grouped by category (easy to scan/maintain). The
+ * morning post does NOT walk this raw order — it follows ROTATION below, which
+ * interleaves categories so consecutive days mix temples, markets, parks,
+ * museums and modern spots (no long run of temples). One per day, cycling back
+ * to the start after 50 days.
  *
  * Each entry carries a Korean hook (blurbKo), a "what you can see" line (seeKo),
  * and a transit-first "how to get there" line (goKo). Coordinates are approximate
  * site centroids. Verified 2026-05-29 against current transit and opening status.
  */
-export const PLACES: readonly Place[] = [
+const CATALOG: readonly Place[] = [
   {
     id: 'grand-palace', nameKo: '왕궁', nameEn: 'The Grand Palace', nameTh: 'พระบรมมหาราชวัง',
     area: '라따나꼬신(올드타운)',
@@ -414,7 +419,40 @@ export const PLACES: readonly Place[] = [
   },
 ] as const;
 
-/** Pick today's place (rotates through the set by day of year, in array order). */
+/**
+ * Display/rotation order: ids interleaved across categories (temple → modern
+ * spot → market → museum → park, round-robin) so the daily feed never serves a
+ * long run of the same kind of place. Edit this to re-sequence the rotation;
+ * the catalog above can stay grouped.
+ */
+const ROTATION: readonly string[] = [
+  'asiatique', 'grand-palace', 'chatuchak-market', 'jim-thompson', 'lumpini',
+  'iconsiam', 'wat-pho', 'or-tor-kor', 'national-museum', 'benjakitti',
+  'mahanakhon', 'wat-arun', 'flower-market', 'museum-siam', 'skypark',
+  'baiyoke', 'golden-mount', 'yaowarat', 'bacc', 'bang-krachao',
+  'khaosan', 'wat-benchamabophit', 'talat-noi', 'moca', 'phra-sumen',
+  'wat-traimit', 'phahurat', 'suan-pakkad', 'chaophraya-boat', 'wat-suthat',
+  'wang-lang', 'erawan-museum', 'rama8-bridge', 'loha-prasat', 'taling-chan',
+  'ancient-city', 'siam', 'wat-mangkon', 'lat-mayom', 'sealife',
+  'wat-paknam', 'terminal21', 'wat-ratchabophit', 'lhong1919', 'wat-intharawihan',
+  'jam-factory', 'erawan-shrine', 'snake-farm', 'safari-world', 'dream-world',
+] as const;
+
+/** The places in rotation order. Fail-fast if ROTATION and CATALOG disagree. */
+export const PLACES: readonly Place[] = (() => {
+  if (ROTATION.length !== CATALOG.length) {
+    throw new Error(
+      `places: ROTATION has ${ROTATION.length} ids but CATALOG has ${CATALOG.length}`,
+    );
+  }
+  return ROTATION.map((id) => {
+    const place = CATALOG.find((p) => p.id === id);
+    if (!place) throw new Error(`places: ROTATION references unknown id "${id}"`);
+    return place;
+  });
+})();
+
+/** Pick today's place (rotates through the set by day of year, in ROTATION order). */
 export function pickPlace(dtSeconds: number): Place {
   return pickByDay(PLACES, dtSeconds);
 }
