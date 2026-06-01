@@ -6,6 +6,13 @@ const BASE: Record<Lang, string> = {
   th: '#วิ่งกรุงเทพ #BangkokRunning',
 };
 
+/** Base hashtags for the "place of the day" travel post (per language). */
+const PLACE_BASE: Record<Lang, string> = {
+  ko: '#방콕여행 #방콕가볼만한곳',
+  en: '#Bangkok #BangkokTravel',
+  th: '#เที่ยวกรุงเทพ #กรุงเทพ',
+};
+
 /**
  * Topic-tag line for discovery. Tags are appended in code AFTER translation, so
  * the translator never has to preserve them (avoids the "no Korean left" check
@@ -19,4 +26,14 @@ export function tagLine(lang: Lang, spotTag?: string): string {
 /** Append the tag line to a post body after a blank line. */
 export function appendTags(body: string, lang: Lang, spotTag?: string): string {
   return `${body}\n\n${tagLine(lang, spotTag)}`;
+}
+
+/** Travel tag line for the place post; the place tag is a shared English token. */
+export function placeTagLine(lang: Lang, placeTag?: string): string {
+  return placeTag ? `${PLACE_BASE[lang]} #${placeTag}` : PLACE_BASE[lang];
+}
+
+/** Append the travel tag line to a place post body after a blank line. */
+export function appendPlaceTags(body: string, lang: Lang, placeTag?: string): string {
+  return `${body}\n\n${placeTagLine(lang, placeTag)}`;
 }

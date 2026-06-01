@@ -72,6 +72,30 @@ export interface Spot {
   tag: string;
 }
 
+/**
+ * A real Bangkok place to visit (non-restaurant): temple, museum, park, market,
+ * landmark, or viewpoint. Used by the morning "place of the day" post.
+ */
+export interface Place {
+  /** Stable slug id. */
+  id: string;
+  nameKo: string;
+  nameEn: string;
+  nameTh: string;
+  /** Korean neighbourhood label, e.g. "라따나꼬신(올드타운)". */
+  area: string;
+  /** One-line Korean hook (the vibe / why it's worth visiting). */
+  blurbKo: string;
+  /** Korean "what you can see there" line (볼거리). */
+  seeKo: string;
+  /** Korean "how to get there" line (가는 법) — transit-first. */
+  goKo: string;
+  lat: number;
+  lon: number;
+  /** English hashtag token (no spaces), e.g. "WatArun". */
+  tag: string;
+}
+
 /** Everything needed to render a "spot of the day" post. */
 export interface SpotConditions {
   spot: Spot;

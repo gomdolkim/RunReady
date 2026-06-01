@@ -45,12 +45,8 @@ function lineBreaks(text: string): number {
   return (text.match(/\n/g) ?? []).length;
 }
 
-/**
- * Ensure a translation preserves the source's structure and data: under 500
- * characters, same line-break count, all source emojis present, and all data
- * numbers (every line but the date header) preserved.
- */
-export function validateTranslation(source: string, translated: string): void {
+/** Shared structural checks: length, no leftover Korean, line breaks, emojis. */
+function validateStructure(source: string, translated: string): void {
   assertUnder500(translated, 'translation');
 
   // EN/TH output must not retain Korean — catches partial/incomplete translations.
@@ -68,9 +64,28 @@ export function validateTranslation(source: string, translated: string): void {
   if (droppedEmoji.length > 0) {
     throw new Error(`translation dropped emoji(s): ${droppedEmoji.join(' ')}`);
   }
+}
+
+/**
+ * Ensure a translation preserves the source's structure and data: under 500
+ * characters, same line-break count, all source emojis present, and all data
+ * numbers (every line but the date header) preserved.
+ */
+export function validateTranslation(source: string, translated: string): void {
+  validateStructure(source, translated);
 
   const droppedNumber = missing(dataNumbers(source), dataNumbers(translated));
   if (droppedNumber.length > 0) {
     throw new Error(`translation dropped number(s): ${droppedNumber.join(', ')}`);
   }
+}
+
+/**
+ * Validate a "place of the day" translation. Same structural guarantees as
+ * {@link validateTranslation} but WITHOUT the metric-number check: place posts
+ * have no critical metrics, and numbers legitimately change form across
+ * languages (e.g. "라마 8세" → "Rama VIII", "84층" → "84th floor").
+ */
+export function validatePlaceTranslation(source: string, translated: string): void {
+  validateStructure(source, translated);
 }

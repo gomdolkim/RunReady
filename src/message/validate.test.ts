@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { assertUnder500, validateTranslation } from './validate.js';
+import { assertUnder500, validateTranslation, validatePlaceTranslation } from './validate.js';
 
 const SOURCE = [
   '방콕, 오늘 언제 뛸까? 🏃',
@@ -67,5 +67,58 @@ describe('validateTranslation', () => {
 
   it('rejects over 500 characters', () => {
     expect(() => validateTranslation(SOURCE, VALID_EN + '\n' + 'x'.repeat(500))).toThrow(/500/);
+  });
+});
+
+const PLACE_KO = [
+  '🐱 소이캣의 오늘의 방콕',
+  '2026.05.24 (일)',
+  '',
+  '📍 라마 8세 다리 · 강변',
+  '우아한 비대칭 사장교.',
+  '',
+  '👀 볼거리: 84층 전망, 야경',
+  '🚇 가는 법: 택시가 편해요',
+  '',
+  '오늘은 여기 어때요? 소이캣과 함께 🐾',
+].join('\n');
+
+const PLACE_EN = [
+  'Soi Cat’s Bangkok pick of the day 🐱',
+  'May 24, 2026 (Sun)',
+  '',
+  '📍 Rama VIII Bridge · Riverside',
+  'An elegant asymmetric cable-stayed bridge.',
+  '',
+  '👀 See: 84th-floor view, night scenery',
+  '🚇 Getting there: a taxi is easiest',
+  '',
+  'How about here today? With Soi Cat 🐾',
+].join('\n');
+
+describe('validatePlaceTranslation', () => {
+  it('accepts a faithful place translation', () => {
+    expect(() => validatePlaceTranslation(PLACE_KO, PLACE_EN)).not.toThrow();
+  });
+
+  it('allows numbers to change form across languages (8세 → VIII)', () => {
+    // "라마 8세" becomes "Rama VIII" — the digit 8 disappears, which is fine.
+    expect(PLACE_EN).not.toContain('8 ');
+    expect(() => validatePlaceTranslation(PLACE_KO, PLACE_EN)).not.toThrow();
+  });
+
+  it('still rejects leftover Korean', () => {
+    const partial = PLACE_EN.replace('night scenery', '야경');
+    expect(() => validatePlaceTranslation(PLACE_KO, partial)).toThrow(/Korean/i);
+  });
+
+  it('still rejects a dropped emoji', () => {
+    const dropped = PLACE_EN.replace('🚇 ', '');
+    expect(() => validatePlaceTranslation(PLACE_KO, dropped)).toThrow(/emoji/i);
+  });
+
+  it('still rejects a different line-break count', () => {
+    const collapsed = PLACE_EN.replace('\n\n📍', '\n📍');
+    expect(() => validatePlaceTranslation(PLACE_KO, collapsed)).toThrow(/line-break/i);
   });
 });

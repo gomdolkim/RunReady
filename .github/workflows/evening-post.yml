@@ -1,9 +1,10 @@
-name: Wat Run Evening Post
+name: Wat Run Evening Post (disabled)
 
 on:
-  # Bangkok 18:00 == UTC 11:00. Announces tomorrow's workout.
-  schedule:
-    - cron: '0 11 * * *'
+  # ⏸️ Disabled: the afternoon/evening post is intentionally NOT scheduled.
+  # Only the morning "place of the day" auto-posts now. The cron is removed so
+  # nothing runs automatically; this stays manual-only (workflow_dispatch) so it
+  # can be re-enabled later by restoring a `schedule:` block.
   workflow_dispatch:
     inputs:
       dry_run:

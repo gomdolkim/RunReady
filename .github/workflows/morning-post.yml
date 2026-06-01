@@ -1,11 +1,12 @@
-name: Bangkok Run Morning Post
+name: Bangkok Place Morning Post
 
 on:
-  # Bangkok 04:00 == UTC 21:00 (previous day).
-  # ⚠️ Active: requires WAQI_TOKEN, ANTHROPIC_API_KEY, and THREADS_ACCESS_TOKEN
-  # repository secrets to be set, or scheduled runs fail every morning.
+  # Bangkok 05:00 == UTC 22:00 (previous day).
+  # ⚠️ Active: requires the THREADS_ACCESS_TOKEN repository secret to be set,
+  # or scheduled runs fail every morning. Posts one Bangkok "place of the day"
+  # (50-place rotation), Korean only — no translation, so no ANTHROPIC/WAQI keys.
   schedule:
-    - cron: '0 21 * * *'
+    - cron: '0 22 * * *'
   workflow_dispatch:
     inputs:
       dry_run:
@@ -39,17 +40,15 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Post to Threads
+      - name: Post place of the day to Threads
         env:
-          WAQI_TOKEN: ${{ secrets.WAQI_TOKEN }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           THREADS_ACCESS_TOKEN: ${{ secrets.THREADS_ACCESS_TOKEN }}
         run: |
           # Manual runs default to a safe dry-run; scheduled runs always publish.
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.dry_run }}" = "true" ]; then
             echo "Running in dry-run mode (no publishing)."
-            npm start -- --dry-run
+            npm run start:places -- --dry-run
           else
             echo "Publishing to Threads."
-            npm start
+            npm run start:places
           fi

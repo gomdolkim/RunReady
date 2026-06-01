@@ -1,9 +1,12 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { TRANSLATION_MODEL } from '../config.js';
 import { enDateLabel, thDateLabel } from '../util/time.js';
-import { validateTranslation } from './validate.js';
+import { validatePlaceTranslation, validateTranslation } from './validate.js';
 
 export type TargetLanguage = 'English' | 'Thai';
+
+/** A function that throws if `translated` does not faithfully render `source`. */
+export type Validator = (source: string, translated: string) => void;
 
 const MAX_TOKENS = 1024;
 
@@ -41,6 +44,32 @@ Rules:
 Output the translation ONLY. No explanations.`;
 }
 
+/** Build the translation system prompt for the "place of the day" post. */
+export function buildPlaceSystemPrompt(target: TargetLanguage): string {
+  return `You are translating a daily "Bangkok place of the day" post for
+travellers, from Korean to ${target}. Each post recommends one real place to
+visit in Bangkok (a temple, museum, park, market, landmark or viewpoint).
+
+Rules:
+- Translate EVERYTHING into ${target}. Do not leave any Korean words.
+- Keep emojis and line breaks EXACTLY as in the source.
+- Leave the SECOND line (the date) exactly as in the source; it is localized
+  separately in code.
+- Translate the FIRST line (the headline) naturally and catchily — it is a hook.
+- Use the common English/Thai name for well-known places (e.g. "Wat Arun",
+  "Grand Palace", "Chatuchak"). Keep BTS/MRT station names, pier names and line
+  names recognizable to a visitor.
+- Keep numbers and units sensible for the target language (e.g. "46m", heights,
+  floor numbers); exact digit preservation is not required.
+- "소이캣" is the mascot's name (a friendly Bangkok street cat). ALWAYS render it
+  as "Soi Cat" in English and "ซอยแคท" in Thai — never translate it to a cat
+  breed or any other word.
+- Use a friendly, inviting travel tone that makes people want to go.
+- For Thai, use a casual but respectful tone.
+
+Output the translation ONLY. No explanations.`;
+}
+
 function localizedDate(target: TargetLanguage, dtSeconds: number): string {
   return target === 'English' ? enDateLabel(dtSeconds) : thDateLabel(dtSeconds);
 }
@@ -61,10 +90,42 @@ export async function translate(
   target: TargetLanguage,
   dtSeconds: number,
 ): Promise<string> {
+  return translateWith(client, koText, target, dtSeconds, buildSystemPrompt, validateTranslation);
+}
+
+/**
+ * Translate a "place of the day" post. Same flow as {@link translate} but with
+ * the travel system prompt and the place validator (no metric-number check).
+ */
+export async function translatePlace(
+  client: TranslationClient,
+  koText: string,
+  target: TargetLanguage,
+  dtSeconds: number,
+): Promise<string> {
+  return translateWith(
+    client,
+    koText,
+    target,
+    dtSeconds,
+    buildPlaceSystemPrompt,
+    validatePlaceTranslation,
+  );
+}
+
+/** Shared translation core: call the model, fix the date line, then validate. */
+async function translateWith(
+  client: TranslationClient,
+  koText: string,
+  target: TargetLanguage,
+  dtSeconds: number,
+  systemPrompt: (target: TargetLanguage) => string,
+  validate: Validator,
+): Promise<string> {
   const response = await client.messages.create({
     model: TRANSLATION_MODEL,
     max_tokens: MAX_TOKENS,
-    system: buildSystemPrompt(target),
+    system: systemPrompt(target),
     messages: [{ role: 'user', content: koText }],
   });
 
@@ -77,7 +138,7 @@ export async function translate(
   lines[1] = localizedDate(target, dtSeconds); // date is the second line
   const text = lines.join('\n');
 
-  validateTranslation(koText, text);
+  validate(koText, text);
   return text;
 }
 
@@ -88,8 +149,25 @@ export async function translateSafe(
   target: TargetLanguage,
   dtSeconds: number,
 ): Promise<string | null> {
+  return safely(() => translate(client, koText, target, dtSeconds), target);
+}
+
+/** Place-post variant of {@link translateSafe}. */
+export async function translatePlaceSafe(
+  client: TranslationClient,
+  koText: string,
+  target: TargetLanguage,
+  dtSeconds: number,
+): Promise<string | null> {
+  return safely(() => translatePlace(client, koText, target, dtSeconds), target);
+}
+
+async function safely(
+  run: () => Promise<string>,
+  target: TargetLanguage,
+): Promise<string | null> {
   try {
-    return await translate(client, koText, target, dtSeconds);
+    return await run();
   } catch (err: unknown) {
     console.error(
       `[wat-run] ${target} translation skipped:`,
