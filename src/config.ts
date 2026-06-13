@@ -2,6 +2,15 @@
 
 export const TIMEZONE = 'Asia/Bangkok';
 
+/** Timezone for the Korean "돈의 진실" money/career fact series (posts ~17:30 KST). */
+export const TIMEZONE_FACTS = 'Asia/Seoul';
+
+/**
+ * Launch date (KST, YYYY-MM-DD) the fact series starts at #1/50 and counts up,
+ * cycling back to #1 every 50 days. Set this to the day you go live.
+ */
+export const FACTS_LAUNCH_DATE = '2026-06-13';
+
 /** Anthropic model used for translation (Phase 2). */
 export const TRANSLATION_MODEL = 'claude-haiku-4-5';
 

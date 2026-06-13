@@ -1,0 +1,55 @@
+name: Money Facts Evening Post (KST 17:30)
+
+on:
+  # Seoul 17:30 == UTC 08:30. Posts one Korean "돈의 진실" money/career fact
+  # (50-fact rotation, cycling every 50 days), Korean only — no translation,
+  # so no ANTHROPIC/WAQI keys.
+  # ⚠️ Active: requires the THREADS_ACCESS_TOKEN_FACTS repository secret (a
+  # SEPARATE Threads account from the Bangkok bot), or scheduled runs fail.
+  schedule:
+    - cron: '30 8 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Print the post without publishing to Threads'
+        type: boolean
+        default: true
+
+# Don't let a slow run overlap the next one.
+concurrency:
+  group: facts-post
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Post fact of the day to Threads
+        env:
+          THREADS_ACCESS_TOKEN_FACTS: ${{ secrets.THREADS_ACCESS_TOKEN_FACTS }}
+        run: |
+          # Manual runs default to a safe dry-run; scheduled runs always publish.
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.dry_run }}" = "true" ]; then
+            echo "Running in dry-run mode (no publishing)."
+            npm run start:facts -- --dry-run
+          else
+            echo "Publishing to Threads."
+            npm run start:facts
+          fi
